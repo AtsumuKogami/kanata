@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.kanata.dev/component/v1/kanata.component.schema.json",
+  "title": "Kanata Component Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "id",
+    "version",
+    "kind",
+    "project",
+    "assemblyName",
+    "targetFramework"
+  ],
+  "properties": {
+    "format": {
+      "const": "kanata.component"
+    },
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["runtime", "backend", "tool", "editor", "plugin"]
+    },
+    "project": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assemblyName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "targetFramework": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "description": {
+      "type": "string"
+    }
+  }
+}

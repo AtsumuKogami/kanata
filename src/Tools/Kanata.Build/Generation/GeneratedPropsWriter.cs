@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using Kanata.Build.Components;
 using Kanata.ProjectSystem.ProjectModel;
 
 namespace Kanata.Build.Generation;
@@ -10,6 +11,7 @@ internal sealed class GeneratedPropsWriter
         string projectFilePath,
         string targetName,
         string configuration,
+        IReadOnlyList<ComponentReference>? componentReferences = null,
         CancellationToken cancellationToken = default)
     {
         var projectRoot = Path.GetDirectoryName(Path.GetFullPath(projectFilePath)) ?? Directory.GetCurrentDirectory();
@@ -20,6 +22,16 @@ internal sealed class GeneratedPropsWriter
         Directory.CreateDirectory(buildRoot);
 
         var source = project.Source!;
+        var itemGroup = new XElement("ItemGroup",
+            ProjectReference(projectRoot, source.Shared!),
+            ProjectReference(projectRoot, source.Logic!),
+            ProjectReference(projectRoot, source.View!));
+
+        foreach (var componentReference in componentReferences ?? Array.Empty<ComponentReference>())
+        {
+            itemGroup.Add(AssemblyReference(componentReference));
+        }
+
         var document = new XDocument(
             new XElement("Project",
                 new XElement("PropertyGroup",
@@ -28,10 +40,7 @@ internal sealed class GeneratedPropsWriter
                     new XElement("KanataTarget", targetName),
                     new XElement("KanataConfiguration", configuration),
                     new XElement("KanataProjectId", project.Id ?? string.Empty)),
-                new XElement("ItemGroup",
-                    ProjectReference(projectRoot, source.Shared!),
-                    ProjectReference(projectRoot, source.Logic!),
-                    ProjectReference(projectRoot, source.View!))));
+                itemGroup));
 
         await File.WriteAllTextAsync(propsPath, document.ToString(), cancellationToken).ConfigureAwait(false);
         return propsPath;
@@ -41,5 +50,13 @@ internal sealed class GeneratedPropsWriter
     {
         return new XElement("ProjectReference",
             new XAttribute("Include", Path.GetFullPath(Path.Combine(projectRoot, relativePath))));
+    }
+
+    private static XElement AssemblyReference(ComponentReference reference)
+    {
+        return new XElement("Reference",
+            new XAttribute("Include", reference.AssemblyName),
+            new XElement("HintPath", reference.AssemblyPath),
+            new XElement("Private", "true"));
     }
 }

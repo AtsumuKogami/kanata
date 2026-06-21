@@ -28,6 +28,7 @@ internal static class Program
                 "generate" => await GenerateCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "build" => await BuildCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "play" => await PlayCommand.RunAsync(commandArgs).ConfigureAwait(false),
+                "engine" => await EngineCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "version" => VersionCommand.Run(),
                 _ => UnknownCommand(command),
             };
@@ -65,13 +66,16 @@ internal static class Program
         Console.WriteLine("  kanata create <name> [--output <path>] [--id <id>] [--force]");
         Console.WriteLine("  kanata new game <name> [--output <path>] [--id <id>] [--force]");
         Console.WriteLine("  kanata validate [project-file-or-directory]");
-        Console.WriteLine("  kanata generate [target] [configuration] [project-file-or-directory]");
-        Console.WriteLine("  kanata build [target] [configuration] [project-file-or-directory]");
-        Console.WriteLine("  kanata play [target] [configuration] [project-file-or-directory]");
+        Console.WriteLine("  kanata generate [target] [configuration] [project-file-or-directory] [--force-engine]");
+        Console.WriteLine("  kanata build [target] [configuration] [project-file-or-directory] [--force-engine]");
+        Console.WriteLine("  kanata play [target] [configuration] [project-file-or-directory] [--force-engine]");
+        Console.WriteLine("  kanata engine build [configuration] [--force]");
+        Console.WriteLine("  kanata engine status [configuration]");
         Console.WriteLine("  kanata version");
         Console.WriteLine();
         Console.WriteLine("Examples:");
         Console.WriteLine("  kanata create MyGame");
+        Console.WriteLine("  kanata engine build Debug");
         Console.WriteLine("  kanata validate MyGame/MyGame.kanata");
         Console.WriteLine("  kanata generate desktop Debug MyGame/MyGame.kanata");
         Console.WriteLine("  kanata build desktop Debug MyGame/MyGame.kanata");

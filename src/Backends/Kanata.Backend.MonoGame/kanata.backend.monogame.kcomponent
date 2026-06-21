@@ -1,0 +1,18 @@
+{
+  "format": "kanata.component",
+  "schemaVersion": 1,
+
+  "id": "kanata.backend.monogame",
+  "version": "$kanata",
+  "kind": "backend",
+
+  "project": "Kanata.Backend.MonoGame.csproj",
+  "assemblyName": "Kanata.Backend.MonoGame",
+  "targetFramework": "net9.0",
+
+  "dependencies": [
+    "kanata.core"
+  ],
+
+  "description": "Default desktop backend placeholder based on the MonoGame direction."
+}

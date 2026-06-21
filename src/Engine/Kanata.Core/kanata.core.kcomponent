@@ -1,0 +1,16 @@
+{
+  "format": "kanata.component",
+  "schemaVersion": 1,
+
+  "id": "kanata.core",
+  "version": "$kanata",
+  "kind": "runtime",
+
+  "project": "Kanata.Core.csproj",
+  "assemblyName": "Kanata.Core",
+  "targetFramework": "net9.0",
+
+  "dependencies": [],
+
+  "description": "Core Kanata runtime primitives."
+}
