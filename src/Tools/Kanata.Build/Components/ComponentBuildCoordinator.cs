@@ -12,11 +12,13 @@ internal sealed class ComponentBuildCoordinator
         var repositoryRoot = EngineRepositoryLocator.FindRepositoryRoot();
         var registry = new BundledComponentRegistry(repositoryRoot);
         var components = await registry.LoadAsync(cancellationToken).ConfigureAwait(false);
-        var builder = new ComponentBuilder(repositoryRoot, components);
-        var componentIds = TargetComponentSelector.Select(context.Project, context.Target);
+        var requestedComponentIds = TargetComponentSelector.Select(context.Project, context.Target);
+        var resolver = new ComponentResolver(components);
+        var resolvedComponents = resolver.Resolve(requestedComponentIds);
+        var builder = new ComponentBuilder(repositoryRoot);
 
         return await builder
-            .EnsureBuiltAsync(componentIds, context.Configuration, force, cancellationToken)
+            .EnsureBuiltAsync(resolvedComponents, context.Configuration, force, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -28,10 +30,12 @@ internal sealed class ComponentBuildCoordinator
         var repositoryRoot = EngineRepositoryLocator.FindRepositoryRoot();
         var registry = new BundledComponentRegistry(repositoryRoot);
         var components = await registry.LoadAsync(cancellationToken).ConfigureAwait(false);
-        var builder = new ComponentBuilder(repositoryRoot, components);
+        var resolver = new ComponentResolver(components);
+        var resolvedComponents = resolver.Resolve(components.Keys);
+        var builder = new ComponentBuilder(repositoryRoot);
 
         return await builder
-            .EnsureBuiltAsync(components.Keys, configuration, force, cancellationToken)
+            .EnsureBuiltAsync(resolvedComponents, configuration, force, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -42,9 +46,11 @@ internal sealed class ComponentBuildCoordinator
         var repositoryRoot = EngineRepositoryLocator.FindRepositoryRoot();
         var registry = new BundledComponentRegistry(repositoryRoot);
         var components = await registry.LoadAsync(cancellationToken).ConfigureAwait(false);
-        var builder = new ComponentBuilder(repositoryRoot, components);
-        var componentIds = TargetComponentSelector.Select(context.Project, context.Target);
+        var requestedComponentIds = TargetComponentSelector.Select(context.Project, context.Target);
+        var resolver = new ComponentResolver(components);
+        var resolvedComponents = resolver.Resolve(requestedComponentIds);
+        var builder = new ComponentBuilder(repositoryRoot);
 
-        return builder.GetCachedReferences(componentIds, context.Configuration);
+        return builder.GetCachedReferences(resolvedComponents, context.Configuration);
     }
 }

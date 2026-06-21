@@ -65,6 +65,7 @@ Invoke-Kanata -Arguments @("create", "SmokeGame") -WorkingDirectory $SmokeRoot
 $projectRoot = Join-Path $SmokeRoot "SmokeGame"
 
 Invoke-Kanata -Arguments @("validate") -WorkingDirectory $projectRoot
+Invoke-Kanata -Arguments @("restore", "desktop", $Configuration) -WorkingDirectory $projectRoot
 Invoke-Kanata -Arguments @("generate", "desktop", $Configuration) -WorkingDirectory $projectRoot
 Invoke-Kanata -Arguments @("build", "desktop", $Configuration) -WorkingDirectory $projectRoot
 Invoke-Kanata -Arguments @("play", "desktop", $Configuration) -WorkingDirectory $projectRoot

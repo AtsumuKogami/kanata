@@ -8,6 +8,7 @@ Kanata uses the project file as an intent description and resolves the concrete 
 kanata create MyGame
 cd MyGame
 kanata validate
+kanata restore
 kanata generate
 kanata build
 kanata play
@@ -17,23 +18,25 @@ kanata play
 
 `validate` reads the project file and checks the project structure.
 
-`generate` validates the project and writes generated build files into `Generated/Build`.
+`restore` validates the project, resolves the required component graph, builds missing local component artifacts, and writes `Kanata.lock.json`.
 
-`build` validates, generates, and calls `dotnet build` for the selected target host project.
+`generate` runs restore and writes generated build files into `Generated/Build`.
 
-`play` validates, generates, and calls `dotnet run` for the selected target host project.
+`build` runs restore, generates build files, and calls `dotnet build` for the selected target host project.
+
+`play` runs restore, generates build files, and calls `dotnet run` for the selected target host project.
 
 ## Version source
 
 The generated `kanataVersion` field is taken from the current Kanata toolchain version. In the monorepo this version is defined in `Directory.Build.props` and is shared by `Kanata.Core`, `Kanata.ProjectSystem`, and `Kanata.Build`.
 
-Later, component versions will be resolved separately and written into a lock file, for example `Kanata.lock.json`.
+Component versions are resolved from `.kcomponent` manifests. The first bundled components use `$kanata`, which means they inherit the current Kanata toolchain version.
 
 ## Component build modes
 
-During engine development, components can be referenced as local projects.
+During engine development, components are restored from the local Kanata source repository and built into the local component cache.
 
-For normal game development, resolved components should come from prebuilt packages or binaries, not from rebuilding the whole engine repository every time.
+For normal game development, resolved components should eventually come from prebuilt packages or binaries, not from rebuilding the whole engine repository every time.
 
 The intended modes are:
 
@@ -41,4 +44,4 @@ The intended modes are:
 - `package` for installed Kanata SDK components;
 - `binary` for already compiled third-party components.
 
-The first builder implementation only creates a technical project build and does not yet resolve component packages.
+The first resolver implementation supports bundled source components and records their resolved artifacts in `Kanata.lock.json`.

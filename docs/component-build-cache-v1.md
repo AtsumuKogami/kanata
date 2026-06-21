@@ -14,8 +14,8 @@ The first cache implementation is local to the engine repository:
 Examples:
 
 ```text
-.kanata/cache/components/kanata.core/0.1.0/Debug/lib/net9.0/Kanata.Core.dll
-.kanata/cache/components/kanata.backend.monogame/0.1.0/Debug/lib/net9.0/Kanata.Backend.MonoGame.dll
+.kanata/cache/components/kanata.core/0.1.0/Debug/lib/net10.0/Kanata.Core.dll
+.kanata/cache/components/kanata.backend.monogame/0.1.0/Debug/lib/net10.0/Kanata.Backend.MonoGame.dll
 ```
 
 ## Commands
@@ -26,9 +26,10 @@ kanata engine build Release
 kanata engine build Debug --force
 ```
 
-Game target commands also ensure required engine components are available:
+Game target commands restore required engine components automatically:
 
 ```powershell
+kanata restore desktop Debug
 kanata generate desktop Debug
 kanata build desktop Debug
 kanata play desktop Debug

@@ -1,16 +1,15 @@
-using Kanata.Build.Generation;
 using Kanata.Build.Infrastructure;
 using Kanata.Build.Restore;
 
 namespace Kanata.Build.Commands;
 
 /// <summary>
-/// Implements the <c>generate</c> command.
+/// Implements the <c>restore</c> command.
 /// </summary>
-public static class GenerateCommand
+public static class RestoreCommand
 {
     /// <summary>
-    /// Restores components and generates build files for a target.
+    /// Validates a project, resolves components, builds missing artifacts, and writes the lock file.
     /// </summary>
     /// <param name="args">Command line arguments.</param>
     /// <returns>Process exit code.</returns>
@@ -26,20 +25,15 @@ public static class GenerateCommand
 
         var forceComponents = options.HasFlag("force-engine") || options.HasFlag("force-components");
         var restoreService = new ComponentRestoreService();
-        var restore = await restoreService
+        var result = await restoreService
             .RestoreAsync(context, forceComponents)
             .ConfigureAwait(false);
 
-        var propsWriter = new GeneratedPropsWriter();
-        var propsPath = await propsWriter
-            .WriteAsync(context.Project, context.ProjectFilePath, context.TargetName, context.Configuration, restore.ComponentReferences)
-            .ConfigureAwait(false);
-
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Generated target build files.");
+        Console.WriteLine("Restore completed.");
         Console.ResetColor();
-        Console.WriteLine($"Lock file: {restore.LockFilePath}");
-        Console.WriteLine($"Props: {propsPath}");
+        Console.WriteLine($"Lock file: {result.LockFilePath}");
+        Console.WriteLine($"Components: {result.ComponentReferences.Count}. Built: {result.BuiltCount}. Cached: {result.CachedCount}.");
 
         return 0;
     }

@@ -25,6 +25,7 @@ internal static class Program
                 "create" => await NewGameCommand.RunCreateAsync(commandArgs).ConfigureAwait(false),
                 "new" => await NewGameCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "validate" => await ValidateCommand.RunAsync(commandArgs).ConfigureAwait(false),
+                "restore" => await RestoreCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "generate" => await GenerateCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "build" => await BuildCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "play" => await PlayCommand.RunAsync(commandArgs).ConfigureAwait(false),
@@ -72,6 +73,7 @@ internal static class Program
         Console.WriteLine();
         Console.WriteLine("Project commands, run from a directory that contains one .kanata file:");
         Console.WriteLine("  kanata validate");
+        Console.WriteLine("  kanata restore [target] [configuration] [--force-engine]");
         Console.WriteLine("  kanata generate [target] [configuration] [--force-engine]");
         Console.WriteLine("  kanata build [target] [configuration] [--force-engine]");
         Console.WriteLine("  kanata play [target] [configuration] [--force-engine]");
@@ -80,6 +82,7 @@ internal static class Program
         Console.WriteLine("  kanata create MyGame");
         Console.WriteLine("  cd MyGame");
         Console.WriteLine("  kanata validate");
+        Console.WriteLine("  kanata restore");
         Console.WriteLine("  kanata build");
         Console.WriteLine("  kanata play");
     }

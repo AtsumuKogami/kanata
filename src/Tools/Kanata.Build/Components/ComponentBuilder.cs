@@ -11,26 +11,23 @@ internal sealed class ComponentBuilder
     };
 
     private readonly string _repositoryRoot;
-    private readonly IReadOnlyDictionary<string, ComponentSource> _components;
 
-    public ComponentBuilder(string repositoryRoot, IReadOnlyDictionary<string, ComponentSource> components)
+    public ComponentBuilder(string repositoryRoot)
     {
         _repositoryRoot = repositoryRoot;
-        _components = components;
     }
 
     public async Task<IReadOnlyList<ComponentBuildResult>> EnsureBuiltAsync(
-        IEnumerable<string> componentIds,
+        IEnumerable<ResolvedComponent> components,
         string configuration,
         bool force,
         CancellationToken cancellationToken = default)
     {
-        var orderedSources = ResolveBuildOrder(componentIds);
         var results = new List<ComponentBuildResult>();
 
-        foreach (var source in orderedSources)
+        foreach (var component in components)
         {
-            var result = await EnsureBuiltAsync(source, configuration, force, cancellationToken).ConfigureAwait(false);
+            var result = await EnsureBuiltAsync(component.Source, configuration, force, cancellationToken).ConfigureAwait(false);
             results.Add(result);
         }
 
@@ -38,11 +35,11 @@ internal sealed class ComponentBuilder
     }
 
     public IReadOnlyList<ComponentReference> GetCachedReferences(
-        IEnumerable<string> componentIds,
+        IEnumerable<ResolvedComponent> components,
         string configuration)
     {
-        return ResolveBuildOrder(componentIds)
-            .Select(source => CreateReference(source, configuration))
+        return components
+            .Select(component => CreateReference(component.Source, configuration))
             .ToArray();
     }
 
@@ -131,51 +128,6 @@ internal sealed class ComponentBuilder
         }
     }
 
-    private IReadOnlyList<ComponentSource> ResolveBuildOrder(IEnumerable<string> componentIds)
-    {
-        var result = new List<ComponentSource>();
-        var visiting = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var componentId in componentIds)
-        {
-            Visit(componentId, visiting, visited, result);
-        }
-
-        return result;
-    }
-
-    private void Visit(
-        string componentId,
-        HashSet<string> visiting,
-        HashSet<string> visited,
-        List<ComponentSource> result)
-    {
-        if (visited.Contains(componentId))
-        {
-            return;
-        }
-
-        if (!visiting.Add(componentId))
-        {
-            throw new InvalidOperationException($"Component dependency cycle detected at {componentId}.");
-        }
-
-        if (!_components.TryGetValue(componentId, out var source))
-        {
-            throw new InvalidOperationException($"Component '{componentId}' is not available in the current Kanata source repository.");
-        }
-
-        foreach (var dependency in source.Dependencies)
-        {
-            Visit(dependency, visiting, visited, result);
-        }
-
-        visiting.Remove(componentId);
-        visited.Add(componentId);
-        result.Add(source);
-    }
-
     private ComponentReference CreateReference(ComponentSource source, string configuration)
     {
         var paths = GetArtifactPaths(source, configuration);
@@ -183,8 +135,13 @@ internal sealed class ComponentBuilder
         {
             Id = source.Id,
             Version = source.Version,
+            Kind = source.Kind,
+            Source = "local-source",
+            TargetFramework = source.TargetFramework,
             AssemblyName = source.AssemblyName,
             AssemblyPath = paths.AssemblyPath,
+            ManifestPath = source.ManifestPath,
+            Dependencies = source.Dependencies,
         };
     }
 

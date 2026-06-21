@@ -83,6 +83,7 @@ public static class NewGameCommand
 
         Console.WriteLine("Next:");
         Console.WriteLine($"  cd {projectRoot}");
+        Console.WriteLine("  kanata restore");
         Console.WriteLine("  kanata build");
         Console.WriteLine("  kanata play");
 
@@ -127,6 +128,7 @@ public static class NewGameCommand
         WriteContentFiles(projectRoot);
         WriteSourceProjects(projectRoot, projectName, projectId, targetFramework);
         WriteDesktopHost(projectRoot, projectName, displayName, targetFramework);
+        WriteProjectGitIgnore(projectRoot);
     }
 
     private static void CreateDirectories(string projectRoot)
@@ -289,6 +291,34 @@ using {{projectName}}.Shared;
 Console.WriteLine("Kanata desktop host");
 Console.WriteLine("Project: {{displayName}}");
 Console.WriteLine("Project id: " + {{projectName}}Info.Id);
+""");
+    }
+
+
+    private static void WriteProjectGitIgnore(string projectRoot)
+    {
+        WriteFile(projectRoot, ".gitignore", """
+# .NET
+bin/
+obj/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# Kanata generated files
+Generated/Build/
+Generated/Cache/
+Generated/Cooked/
+
+# Current dev lock is machine-local while components are restored from a local Kanata source repository.
+Kanata.lock.json
+
+# OS
+.DS_Store
+Thumbs.db
 """);
     }
 

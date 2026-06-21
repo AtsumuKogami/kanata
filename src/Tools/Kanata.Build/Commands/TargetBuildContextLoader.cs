@@ -83,6 +83,7 @@ internal static class TargetBuildContextLoader
     private static void PrintUsage()
     {
         Console.WriteLine("Usage:");
+        Console.WriteLine("  kanata restore [target] [configuration] [--force-engine]");
         Console.WriteLine("  kanata generate [target] [configuration] [--force-engine]");
         Console.WriteLine("  kanata build [target] [configuration] [--force-engine]");
         Console.WriteLine("  kanata play [target] [configuration] [--force-engine]");
