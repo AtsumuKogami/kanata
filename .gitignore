@@ -1,0 +1,18 @@
+# .NET
+bin/
+obj/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# Kanata generated
+Generated/Build/
+Generated/Cache/
+Generated/Cooked/
+
+# OS
+.DS_Store
+Thumbs.db

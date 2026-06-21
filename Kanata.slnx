@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Backends/">
+    <Project Path="src/Backends/Kanata.Backend.MonoGame/Kanata.Backend.MonoGame.csproj" />
+  </Folder>
+  <Folder Name="/src/Engine/">
+    <Project Path="src/Engine/Kanata.Core/Kanata.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/">
+    <Project Path="src/Tools/Kanata.Build/Kanata.Build.csproj" />
+    <Project Path="src/Tools/Kanata.ProjectSystem/Kanata.ProjectSystem.csproj" />
+  </Folder>
+</Solution>
