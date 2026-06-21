@@ -1,32 +1,67 @@
 using Kanata.Build.Infrastructure;
+using Kanata.Build.Reporting;
+using Kanata.ProjectSystem.ProjectLoading;
+using Kanata.ProjectSystem.Validation;
 
 namespace Kanata.Build.Commands;
 
 /// <summary>
-/// Implements the <c>new game</c> command.
+/// Implements project creation commands.
 /// </summary>
 public static class NewGameCommand
 {
     /// <summary>
-    /// Creates a new Kanata game project.
+    /// Creates a new Kanata game project using the legacy <c>new game</c> syntax.
     /// </summary>
     /// <param name="args">Command line arguments.</param>
     /// <returns>Process exit code.</returns>
-    public static Task<int> RunAsync(IReadOnlyList<string> args)
+    public static async Task<int> RunAsync(IReadOnlyList<string> args)
+    {
+        return await RunCreateInternalAsync(args, requireGameKeyword: true).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Creates a new Kanata game project using the short <c>create</c> syntax.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>Process exit code.</returns>
+    public static async Task<int> RunCreateAsync(IReadOnlyList<string> args)
+    {
+        return await RunCreateInternalAsync(args, requireGameKeyword: false).ConfigureAwait(false);
+    }
+
+    private static async Task<int> RunCreateInternalAsync(IReadOnlyList<string> args, bool requireGameKeyword)
     {
         var options = CommandLineOptions.Parse(args);
+        var nameIndex = 0;
 
-        if (options.Positionals.Count < 2 || !string.Equals(options.Positionals[0], "game", StringComparison.OrdinalIgnoreCase))
+        if (requireGameKeyword)
         {
-            PrintUsage();
-            return Task.FromResult(1);
+            if (options.Positionals.Count < 2 || !string.Equals(options.Positionals[0], "game", StringComparison.OrdinalIgnoreCase))
+            {
+                PrintNewGameUsage();
+                return 1;
+            }
+
+            nameIndex = 1;
+        }
+        else if (options.Positionals.Count > 0 && string.Equals(options.Positionals[0], "game", StringComparison.OrdinalIgnoreCase))
+        {
+            nameIndex = 1;
         }
 
-        var displayName = options.Positionals[1];
+        if (options.Positionals.Count <= nameIndex)
+        {
+            PrintCreateUsage();
+            return 1;
+        }
+
+        var displayName = options.Positionals[nameIndex];
         var projectName = TextNaming.ToPascalIdentifier(displayName);
         var projectId = options.GetValue("id") ?? TextNaming.ToProjectId(displayName);
         var output = options.GetValue("output") ?? projectName;
         var force = options.HasFlag("force");
+        var kanataVersion = KanataVersionProvider.CurrentVersion;
 
         var projectRoot = Path.GetFullPath(output);
 
@@ -35,35 +70,73 @@ public static class NewGameCommand
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine($"error: output directory is not empty: {projectRoot}");
             Console.ResetColor();
-            return Task.FromResult(1);
+            return 1;
         }
 
-        CreateProject(projectRoot, projectName, displayName, projectId);
+        CreateProject(projectRoot, projectName, displayName, projectId, kanataVersion);
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"Created Kanata game project: {displayName}");
         Console.ResetColor();
-        Console.WriteLine($"Project file: {Path.Combine(projectRoot, projectName + ".kanata")}");
-        Console.WriteLine();
-        Console.WriteLine("Next:");
-        Console.WriteLine($"  kanata validate {Path.Combine(projectRoot, projectName + ".kanata")}");
-        Console.WriteLine($"  kanata build desktop Debug {Path.Combine(projectRoot, projectName + ".kanata")}");
 
-        return Task.FromResult(0);
+        var projectFilePath = Path.Combine(projectRoot, projectName + ".kanata");
+        Console.WriteLine($"Project file: {projectFilePath}");
+        Console.WriteLine($"Kanata version: {kanataVersion}");
+        Console.WriteLine();
+
+        var validationExitCode = await ValidateCreatedProjectAsync(projectFilePath).ConfigureAwait(false);
+
+        if (validationExitCode != 0)
+        {
+            return validationExitCode;
+        }
+
+        Console.WriteLine("Next:");
+        Console.WriteLine($"  cd {projectRoot}");
+        Console.WriteLine("  kanata build");
+        Console.WriteLine("  kanata play");
+
+        return 0;
     }
 
-    private static void PrintUsage()
+    private static void PrintNewGameUsage()
     {
         Console.WriteLine("Usage:");
         Console.WriteLine("  kanata new game <name> [--output <path>] [--id <id>] [--force]");
     }
 
-    private static void CreateProject(string projectRoot, string projectName, string displayName, string projectId)
+    private static void PrintCreateUsage()
+    {
+        Console.WriteLine("Usage:");
+        Console.WriteLine("  kanata create <name> [--output <path>] [--id <id>] [--force]");
+        Console.WriteLine("  kanata create game <name> [--output <path>] [--id <id>] [--force]");
+    }
+
+    private static async Task<int> ValidateCreatedProjectAsync(string projectFilePath)
+    {
+        Console.WriteLine("Validating generated project...");
+
+        var reader = new KanataProjectReader();
+        var validator = new KanataProjectValidator();
+        var project = await reader.ReadAsync(projectFilePath).ConfigureAwait(false);
+        var result = validator.Validate(project, projectFilePath);
+
+        ValidationReporter.Print(projectFilePath, result);
+
+        return result.HasErrors ? 1 : 0;
+    }
+
+    private static void CreateProject(
+        string projectRoot,
+        string projectName,
+        string displayName,
+        string projectId,
+        string kanataVersion)
     {
         Directory.CreateDirectory(projectRoot);
 
         CreateDirectories(projectRoot);
-        WriteProjectFile(projectRoot, projectName, displayName, projectId);
+        WriteProjectFile(projectRoot, projectName, displayName, projectId, kanataVersion);
         WriteContentFiles(projectRoot);
         WriteSourceProjects(projectRoot, projectName, projectId);
         WriteDesktopHost(projectRoot, projectName, displayName);
@@ -97,7 +170,12 @@ public static class NewGameCommand
         WriteFile(projectRoot, "Generated/.gitkeep", string.Empty);
     }
 
-    private static void WriteProjectFile(string projectRoot, string projectName, string displayName, string projectId)
+    private static void WriteProjectFile(
+        string projectRoot,
+        string projectName,
+        string displayName,
+        string projectId,
+        string kanataVersion)
     {
         WriteFile(projectRoot, $"{projectName}.kanata", $$"""
 {
@@ -109,7 +187,7 @@ public static class NewGameCommand
   "id": "{{projectId}}",
   "name": "{{displayName}}",
   "projectVersion": "0.1.0",
-  "kanataVersion": "0.1.0",
+  "kanataVersion": "{{kanataVersion}}",
 
   "paths": {
     "content": "Content",

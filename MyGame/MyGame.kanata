@@ -1,20 +1,13 @@
-# Kanata project format v1
-
-A Kanata project file uses JSONC syntax and the `.kanata` extension.
-
-## Minimal file
-
-```jsonc
 {
   "$schema": "https://schemas.kanata.dev/project/v1/kanata.project.schema.json",
 
   "format": "kanata.project",
   "schemaVersion": 1,
 
-  "id": "my-game",
-  "name": "My Game",
+  "id": "mygame",
+  "name": "MyGame",
   "projectVersion": "0.1.0",
-  "kanataVersion": "0.1.0",
+  "kanataVersion": "0.1.0+f7b0194993b6f0d2c3bd88c6a78394581775d607",
 
   "paths": {
     "content": "Content",
@@ -49,18 +42,3 @@ A Kanata project file uses JSONC syntax and the `.kanata` extension.
     "scene": "Content/Scenes/MainMenu.kscene"
   }
 }
-```
-
-## Version fields
-
-`schemaVersion` is the version of the project file format.
-
-`projectVersion` is the version of the game project.
-
-`kanataVersion` is the Kanata toolchain version used when the project was created. In the current monorepo it is shared with `Kanata.Core` through `Directory.Build.props`.
-
-## Builder behavior
-
-The builder validates the project before `generate`, `build`, and `play`.
-
-The generated files are written under `Generated/Build` and can be deleted safely.

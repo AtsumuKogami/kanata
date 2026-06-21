@@ -4,12 +4,12 @@ using Kanata.Build.Infrastructure;
 namespace Kanata.Build.Commands;
 
 /// <summary>
-/// Implements the <c>build</c> command.
+/// Implements the <c>play</c> command.
 /// </summary>
-public static class BuildCommand
+public static class PlayCommand
 {
     /// <summary>
-    /// Validates, generates, and builds a Kanata target.
+    /// Validates, generates, and runs a Kanata target.
     /// </summary>
     /// <param name="args">Command line arguments.</param>
     /// <returns>Process exit code.</returns>
@@ -28,11 +28,11 @@ public static class BuildCommand
             .ConfigureAwait(false);
 
         Console.WriteLine($"Generated props: {propsPath}");
-        Console.WriteLine($"Building target '{context.TargetName}' ({context.Configuration})...");
+        Console.WriteLine($"Running target '{context.TargetName}' ({context.Configuration})...");
 
         return await ProcessRunner.RunAsync(
             "dotnet",
-            ["build", context.HostProjectPath, "-c", context.Configuration, $"-p:KanataGeneratedProps={propsPath}"],
+            ["run", "--project", context.HostProjectPath, "-c", context.Configuration, $"--property:KanataGeneratedProps={propsPath}"],
             context.ProjectRoot).ConfigureAwait(false);
     }
 }

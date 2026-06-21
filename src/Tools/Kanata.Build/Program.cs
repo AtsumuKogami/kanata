@@ -22,9 +22,13 @@ internal static class Program
 
             return command switch
             {
+                "create" => await NewGameCommand.RunCreateAsync(commandArgs).ConfigureAwait(false),
                 "new" => await NewGameCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "validate" => await ValidateCommand.RunAsync(commandArgs).ConfigureAwait(false),
+                "generate" => await GenerateCommand.RunAsync(commandArgs).ConfigureAwait(false),
                 "build" => await BuildCommand.RunAsync(commandArgs).ConfigureAwait(false),
+                "play" => await PlayCommand.RunAsync(commandArgs).ConfigureAwait(false),
+                "version" => VersionCommand.Run(),
                 _ => UnknownCommand(command),
             };
         }
@@ -58,13 +62,19 @@ internal static class Program
         Console.WriteLine("Kanata.Build");
         Console.WriteLine();
         Console.WriteLine("Usage:");
+        Console.WriteLine("  kanata create <name> [--output <path>] [--id <id>] [--force]");
         Console.WriteLine("  kanata new game <name> [--output <path>] [--id <id>] [--force]");
         Console.WriteLine("  kanata validate [project-file-or-directory]");
+        Console.WriteLine("  kanata generate [target] [configuration] [project-file-or-directory]");
         Console.WriteLine("  kanata build [target] [configuration] [project-file-or-directory]");
+        Console.WriteLine("  kanata play [target] [configuration] [project-file-or-directory]");
+        Console.WriteLine("  kanata version");
         Console.WriteLine();
         Console.WriteLine("Examples:");
-        Console.WriteLine("  kanata new game MyGame");
+        Console.WriteLine("  kanata create MyGame");
         Console.WriteLine("  kanata validate MyGame/MyGame.kanata");
+        Console.WriteLine("  kanata generate desktop Debug MyGame/MyGame.kanata");
         Console.WriteLine("  kanata build desktop Debug MyGame/MyGame.kanata");
+        Console.WriteLine("  kanata play desktop Debug MyGame/MyGame.kanata");
     }
 }

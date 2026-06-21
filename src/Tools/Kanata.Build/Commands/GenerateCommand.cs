@@ -1,15 +1,14 @@
 using Kanata.Build.Generation;
-using Kanata.Build.Infrastructure;
 
 namespace Kanata.Build.Commands;
 
 /// <summary>
-/// Implements the <c>build</c> command.
+/// Implements the <c>generate</c> command.
 /// </summary>
-public static class BuildCommand
+public static class GenerateCommand
 {
     /// <summary>
-    /// Validates, generates, and builds a Kanata target.
+    /// Validates a project and generates build files for a target.
     /// </summary>
     /// <param name="args">Command line arguments.</param>
     /// <returns>Process exit code.</returns>
@@ -27,12 +26,11 @@ public static class BuildCommand
             .WriteAsync(context.Project, context.ProjectFilePath, context.TargetName, context.Configuration)
             .ConfigureAwait(false);
 
-        Console.WriteLine($"Generated props: {propsPath}");
-        Console.WriteLine($"Building target '{context.TargetName}' ({context.Configuration})...");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Generated target build files.");
+        Console.ResetColor();
+        Console.WriteLine($"Props: {propsPath}");
 
-        return await ProcessRunner.RunAsync(
-            "dotnet",
-            ["build", context.HostProjectPath, "-c", context.Configuration, $"-p:KanataGeneratedProps={propsPath}"],
-            context.ProjectRoot).ConfigureAwait(false);
+        return 0;
     }
 }

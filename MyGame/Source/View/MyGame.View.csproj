@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>MyGame.View</AssemblyName>
+    <RootNamespace>MyGame.View</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\MyGame.Shared.csproj" />
+    <ProjectReference Include="..\Logic\MyGame.Logic.csproj" />
+  </ItemGroup>
+
+</Project>
