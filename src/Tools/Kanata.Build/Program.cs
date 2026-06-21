@@ -60,25 +60,27 @@ internal static class Program
 
     private static void PrintHelp()
     {
-        Console.WriteLine("Kanata.Build");
+        Console.WriteLine("Kanata");
         Console.WriteLine();
-        Console.WriteLine("Usage:");
+        Console.WriteLine("Global commands:");
         Console.WriteLine("  kanata create <name> [--output <path>] [--id <id>] [--force]");
+        Console.WriteLine("  kanata new <name> [--output <path>] [--id <id>] [--force]");
         Console.WriteLine("  kanata new game <name> [--output <path>] [--id <id>] [--force]");
-        Console.WriteLine("  kanata validate [project-file-or-directory]");
-        Console.WriteLine("  kanata generate [target] [configuration] [project-file-or-directory] [--force-engine]");
-        Console.WriteLine("  kanata build [target] [configuration] [project-file-or-directory] [--force-engine]");
-        Console.WriteLine("  kanata play [target] [configuration] [project-file-or-directory] [--force-engine]");
         Console.WriteLine("  kanata engine build [configuration] [--force]");
         Console.WriteLine("  kanata engine status [configuration]");
         Console.WriteLine("  kanata version");
         Console.WriteLine();
+        Console.WriteLine("Project commands, run from a directory that contains one .kanata file:");
+        Console.WriteLine("  kanata validate");
+        Console.WriteLine("  kanata generate [target] [configuration] [--force-engine]");
+        Console.WriteLine("  kanata build [target] [configuration] [--force-engine]");
+        Console.WriteLine("  kanata play [target] [configuration] [--force-engine]");
+        Console.WriteLine();
         Console.WriteLine("Examples:");
         Console.WriteLine("  kanata create MyGame");
-        Console.WriteLine("  kanata engine build Debug");
-        Console.WriteLine("  kanata validate MyGame/MyGame.kanata");
-        Console.WriteLine("  kanata generate desktop Debug MyGame/MyGame.kanata");
-        Console.WriteLine("  kanata build desktop Debug MyGame/MyGame.kanata");
-        Console.WriteLine("  kanata play desktop Debug MyGame/MyGame.kanata");
+        Console.WriteLine("  cd MyGame");
+        Console.WriteLine("  kanata validate");
+        Console.WriteLine("  kanata build");
+        Console.WriteLine("  kanata play");
     }
 }

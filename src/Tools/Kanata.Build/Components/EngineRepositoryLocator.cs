@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Kanata.Build.Components;
 
 internal static class EngineRepositoryLocator
@@ -7,6 +9,7 @@ internal static class EngineRepositoryLocator
         var candidates = new[]
         {
             Environment.GetEnvironmentVariable("KANATA_REPOSITORY_ROOT"),
+            ReadDevInstallRepositoryRoot(),
             Directory.GetCurrentDirectory(),
             AppContext.BaseDirectory,
         };
@@ -28,7 +31,39 @@ internal static class EngineRepositoryLocator
         throw new DirectoryNotFoundException(
             "Unable to locate the Kanata source repository. " +
             "Expected a directory that contains src/Engine/Kanata.Core and src/Tools/Kanata.Build. " +
+            "Run scripts/install-kanata-dev.ps1 from the Kanata repository, restart the terminal, " +
+            "or set KANATA_REPOSITORY_ROOT manually. " +
             $"Current directory: {Directory.GetCurrentDirectory()}");
+    }
+
+    private static string? ReadDevInstallRepositoryRoot()
+    {
+        var userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (string.IsNullOrWhiteSpace(userProfile))
+        {
+            return null;
+        }
+
+        var configPath = Path.Combine(userProfile, ".kanata", "dev-install.json");
+        if (!File.Exists(configPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+            if (document.RootElement.TryGetProperty("repositoryRoot", out var repositoryRoot))
+            {
+                return repositoryRoot.GetString();
+            }
+        }
+        catch
+        {
+            return null;
+        }
+
+        return null;
     }
 
     private static string? TryFindFrom(string startDirectory)

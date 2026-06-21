@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <KanataTargetFramework>net10.0</KanataTargetFramework>
+
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

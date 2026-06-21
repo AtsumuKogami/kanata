@@ -11,13 +11,13 @@ namespace Kanata.Build.Commands;
 public static class NewGameCommand
 {
     /// <summary>
-    /// Creates a new Kanata game project using the legacy <c>new game</c> syntax.
+    /// Creates a new Kanata game project using the <c>new</c> syntax.
     /// </summary>
     /// <param name="args">Command line arguments.</param>
     /// <returns>Process exit code.</returns>
     public static async Task<int> RunAsync(IReadOnlyList<string> args)
     {
-        return await RunCreateInternalAsync(args, requireGameKeyword: true).ConfigureAwait(false);
+        return await RunCreateInternalAsync(args).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -27,28 +27,16 @@ public static class NewGameCommand
     /// <returns>Process exit code.</returns>
     public static async Task<int> RunCreateAsync(IReadOnlyList<string> args)
     {
-        return await RunCreateInternalAsync(args, requireGameKeyword: false).ConfigureAwait(false);
+        return await RunCreateInternalAsync(args).ConfigureAwait(false);
     }
 
-    private static async Task<int> RunCreateInternalAsync(IReadOnlyList<string> args, bool requireGameKeyword)
+    private static async Task<int> RunCreateInternalAsync(IReadOnlyList<string> args)
     {
         var options = CommandLineOptions.Parse(args);
-        var nameIndex = 0;
-
-        if (requireGameKeyword)
-        {
-            if (options.Positionals.Count < 2 || !string.Equals(options.Positionals[0], "game", StringComparison.OrdinalIgnoreCase))
-            {
-                PrintNewGameUsage();
-                return 1;
-            }
-
-            nameIndex = 1;
-        }
-        else if (options.Positionals.Count > 0 && string.Equals(options.Positionals[0], "game", StringComparison.OrdinalIgnoreCase))
-        {
-            nameIndex = 1;
-        }
+        var nameIndex = options.Positionals.Count > 0
+            && string.Equals(options.Positionals[0], "game", StringComparison.OrdinalIgnoreCase)
+                ? 1
+                : 0;
 
         if (options.Positionals.Count <= nameIndex)
         {
@@ -62,6 +50,7 @@ public static class NewGameCommand
         var output = options.GetValue("output") ?? projectName;
         var force = options.HasFlag("force");
         var kanataVersion = KanataVersionProvider.CurrentVersion;
+        var targetFramework = KanataSdkInfo.TargetFramework;
 
         var projectRoot = Path.GetFullPath(output);
 
@@ -73,7 +62,7 @@ public static class NewGameCommand
             return 1;
         }
 
-        CreateProject(projectRoot, projectName, displayName, projectId, kanataVersion);
+        CreateProject(projectRoot, projectName, displayName, projectId, kanataVersion, targetFramework);
 
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"Created Kanata game project: {displayName}");
@@ -82,6 +71,7 @@ public static class NewGameCommand
         var projectFilePath = Path.Combine(projectRoot, projectName + ".kanata");
         Console.WriteLine($"Project file: {projectFilePath}");
         Console.WriteLine($"Kanata version: {kanataVersion}");
+        Console.WriteLine($"Target framework: {targetFramework}");
         Console.WriteLine();
 
         var validationExitCode = await ValidateCreatedProjectAsync(projectFilePath).ConfigureAwait(false);
@@ -99,17 +89,13 @@ public static class NewGameCommand
         return 0;
     }
 
-    private static void PrintNewGameUsage()
-    {
-        Console.WriteLine("Usage:");
-        Console.WriteLine("  kanata new game <name> [--output <path>] [--id <id>] [--force]");
-    }
-
     private static void PrintCreateUsage()
     {
         Console.WriteLine("Usage:");
         Console.WriteLine("  kanata create <name> [--output <path>] [--id <id>] [--force]");
         Console.WriteLine("  kanata create game <name> [--output <path>] [--id <id>] [--force]");
+        Console.WriteLine("  kanata new <name> [--output <path>] [--id <id>] [--force]");
+        Console.WriteLine("  kanata new game <name> [--output <path>] [--id <id>] [--force]");
     }
 
     private static async Task<int> ValidateCreatedProjectAsync(string projectFilePath)
@@ -131,15 +117,16 @@ public static class NewGameCommand
         string projectName,
         string displayName,
         string projectId,
-        string kanataVersion)
+        string kanataVersion,
+        string targetFramework)
     {
         Directory.CreateDirectory(projectRoot);
 
         CreateDirectories(projectRoot);
         WriteProjectFile(projectRoot, projectName, displayName, projectId, kanataVersion);
         WriteContentFiles(projectRoot);
-        WriteSourceProjects(projectRoot, projectName, projectId);
-        WriteDesktopHost(projectRoot, projectName, displayName);
+        WriteSourceProjects(projectRoot, projectName, projectId, targetFramework);
+        WriteDesktopHost(projectRoot, projectName, displayName, targetFramework);
     }
 
     private static void CreateDirectories(string projectRoot)
@@ -237,11 +224,11 @@ public static class NewGameCommand
 """);
     }
 
-    private static void WriteSourceProjects(string projectRoot, string projectName, string projectId)
+    private static void WriteSourceProjects(string projectRoot, string projectName, string projectId, string targetFramework)
     {
-        WriteFile(projectRoot, $"Source/Shared/{projectName}.Shared.csproj", ProjectFile(projectName, "Shared", null));
-        WriteFile(projectRoot, $"Source/Logic/{projectName}.Logic.csproj", ProjectFile(projectName, "Logic", [Path.Combine("..", "Shared", $"{projectName}.Shared.csproj")]));
-        WriteFile(projectRoot, $"Source/View/{projectName}.View.csproj", ProjectFile(projectName, "View", [Path.Combine("..", "Shared", $"{projectName}.Shared.csproj"), Path.Combine("..", "Logic", $"{projectName}.Logic.csproj")]));
+        WriteFile(projectRoot, $"Source/Shared/{projectName}.Shared.csproj", ProjectFile(projectName, "Shared", null, targetFramework));
+        WriteFile(projectRoot, $"Source/Logic/{projectName}.Logic.csproj", ProjectFile(projectName, "Logic", [Path.Combine("..", "Shared", $"{projectName}.Shared.csproj")], targetFramework));
+        WriteFile(projectRoot, $"Source/View/{projectName}.View.csproj", ProjectFile(projectName, "View", [Path.Combine("..", "Shared", $"{projectName}.Shared.csproj"), Path.Combine("..", "Logic", $"{projectName}.Logic.csproj")], targetFramework));
 
         WriteFile(projectRoot, $"Source/Shared/{projectName}Info.cs", $$"""
 namespace {{projectName}}.Shared;
@@ -281,13 +268,13 @@ public static class {{projectName}}View
 """);
     }
 
-    private static void WriteDesktopHost(string projectRoot, string projectName, string displayName)
+    private static void WriteDesktopHost(string projectRoot, string projectName, string displayName, string targetFramework)
     {
         WriteFile(projectRoot, $"Platforms/Desktop/{projectName}.Desktop.csproj", $$"""
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>{{targetFramework}}</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -305,7 +292,7 @@ Console.WriteLine("Project id: " + {{projectName}}Info.Id);
 """);
     }
 
-    private static string ProjectFile(string projectName, string layerName, IEnumerable<string>? references)
+    private static string ProjectFile(string projectName, string layerName, IEnumerable<string>? references, string targetFramework)
     {
         var referenceItems = references?.Select(reference => $"    <ProjectReference Include=\"{reference}\" />") ?? [];
         var referenceBlock = referenceItems.Any()
@@ -315,7 +302,7 @@ Console.WriteLine("Project id: " + {{projectName}}Info.Id);
         return $$"""
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>{{targetFramework}}</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>{{projectName}}.{{layerName}}</AssemblyName>

@@ -61,7 +61,7 @@ internal sealed class BundledComponentRegistry
             ComponentRoot = componentRoot,
             ProjectPath = projectPath,
             AssemblyName = assemblyName,
-            TargetFramework = manifest.TargetFramework ?? "net9.0",
+            TargetFramework = manifest.TargetFramework ?? KanataSdkInfo.TargetFramework,
             Dependencies = manifest.Dependencies,
             Manifest = manifest,
         };

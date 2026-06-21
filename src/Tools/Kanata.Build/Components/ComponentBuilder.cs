@@ -72,7 +72,7 @@ internal sealed class ComponentBuilder
 
         var exitCode = await ProcessRunner.RunAsync(
             "dotnet",
-            ["build", source.ProjectPath, "-c", configuration, "-o", paths.LibRoot],
+            ["build", source.ProjectPath, "-c", configuration, "-f", source.TargetFramework, "-o", paths.LibRoot],
             _repositoryRoot,
             cancellationToken).ConfigureAwait(false);
 
