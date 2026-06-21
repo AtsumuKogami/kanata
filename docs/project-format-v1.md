@@ -1,8 +1,8 @@
-# Kanata project format v1
+# Kanata Project Format v1
 
-Kanata project files use the `.kanata` extension and JSONC syntax. JSONC means regular JSON with comments and trailing commas allowed.
+Kanata game projects are described by a `.kanata` file. The file uses JSONC: normal JSON syntax plus comments and trailing commas.
 
-## Minimal project file
+## Minimal example
 
 ```jsonc
 {
@@ -51,26 +51,25 @@ Kanata project files use the `.kanata` extension and JSONC syntax. JSONC means r
 }
 ```
 
-## Version fields
+## Required fields
 
-`schemaVersion` is the version of the `.kanata` file format.
+- `format` must be `kanata.project`.
+- `schemaVersion` identifies the project file schema. Version `1` is the initial format.
+- `id` is a stable lowercase technical identifier.
+- `name` is the human-readable project name.
+- `kanataVersion` records the SDK version expected by the project.
+- `paths` declares standard project folders.
+- `source` declares C# source projects used by the generated build.
+- `features` declares high-level project features.
+- `targets` declares build targets.
+- `start.scene` points to the startup scene.
 
-`projectVersion` is the version of the game project.
-
-`kanataVersion` is the Kanata SDK version requested by the project.
-
-## Validation
-
-The first ProjectSystem implementation validates structure, required fields, referenced directories, source projects, target host projects, and the startup scene.
-
-Run validation with:
-
-```bash
-kanata validate path/to/MyGame.kanata
-```
-
-or from a project directory:
+## Current CLI commands
 
 ```bash
-kanata validate
+kanata new game MyGame
+kanata validate MyGame/MyGame.kanata
+kanata build desktop Debug MyGame/MyGame.kanata
 ```
+
+During build, Kanata generates an MSBuild props file under `Generated/Build` and passes it to the target host project through the `KanataGeneratedProps` property.

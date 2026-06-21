@@ -11,16 +11,16 @@ public sealed class KanataProjectReader
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
         PropertyNameCaseInsensitive = false,
-        ReadCommentHandling = JsonCommentHandling.Skip
     };
 
     /// <summary>
-    /// Reads a Kanata project file from the specified path.
+    /// Reads a Kanata project file asynchronously.
     /// </summary>
-    /// <param name="projectFilePath">The path to the project file.</param>
-    /// <param name="cancellationToken">A token used to cancel the operation.</param>
-    /// <returns>The loaded project model.</returns>
+    /// <param name="projectFilePath">Path to a <c>.kanata</c> project file.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>The loaded Kanata project model.</returns>
     public async Task<KanataProject> ReadAsync(string projectFilePath, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectFilePath);
@@ -30,8 +30,8 @@ public sealed class KanataProjectReader
             throw new FileNotFoundException("Kanata project file was not found.", projectFilePath);
         }
 
-        await using var stream = File.OpenRead(projectFilePath);
-        var project = await JsonSerializer.DeserializeAsync<KanataProject>(stream, JsonOptions, cancellationToken);
+        var json = await File.ReadAllTextAsync(projectFilePath, cancellationToken).ConfigureAwait(false);
+        var project = JsonSerializer.Deserialize<KanataProject>(json, JsonOptions);
 
         return project ?? throw new InvalidOperationException("Kanata project file is empty or invalid.");
     }

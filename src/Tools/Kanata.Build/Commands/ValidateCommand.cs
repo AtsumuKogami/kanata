@@ -1,53 +1,32 @@
+using Kanata.Build.Reporting;
 using Kanata.ProjectSystem.ProjectLoading;
 using Kanata.ProjectSystem.Validation;
 
 namespace Kanata.Build.Commands;
 
-internal sealed class ValidateCommand
+/// <summary>
+/// Implements the <c>validate</c> command.
+/// </summary>
+public static class ValidateCommand
 {
-    public async Task<int> RunAsync(string[] args, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Executes project validation.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>Process exit code.</returns>
+    public static async Task<int> RunAsync(IReadOnlyList<string> args)
     {
-        var requestedPath = args.Length > 0 ? args[0] : null;
+        var projectInput = args.Count > 0 ? args[0] : null;
         var finder = new KanataProjectFileFinder();
         var reader = new KanataProjectReader();
         var validator = new KanataProjectValidator();
 
-        try
-        {
-            var projectFilePath = finder.Find(requestedPath);
-            var project = await reader.ReadAsync(projectFilePath, cancellationToken);
-            var result = validator.Validate(project, projectFilePath);
+        var projectFilePath = finder.FindProjectFile(projectInput);
+        var project = await reader.ReadAsync(projectFilePath).ConfigureAwait(false);
+        var result = validator.Validate(project, projectFilePath);
 
-            Console.WriteLine($"Project: {projectFilePath}");
-            PrintIssues(result);
+        ValidationReporter.Print(projectFilePath, result);
 
-            if (result.HasErrors)
-            {
-                Console.WriteLine("Validation failed.");
-                return 1;
-            }
-
-            Console.WriteLine("Validation succeeded.");
-            return 0;
-        }
-        catch (Exception exception) when (exception is IOException or InvalidOperationException or UnauthorizedAccessException or System.Text.Json.JsonException)
-        {
-            Console.Error.WriteLine($"Validation failed: {exception.Message}");
-            return 1;
-        }
-    }
-
-    private static void PrintIssues(ValidationResult result)
-    {
-        if (result.Issues.Count == 0)
-        {
-            return;
-        }
-
-        foreach (var issue in result.Issues)
-        {
-            var location = string.IsNullOrWhiteSpace(issue.Location) ? string.Empty : $" [{issue.Location}]";
-            Console.WriteLine($"{issue.Severity} {issue.Code}{location}: {issue.Message}");
-        }
+        return result.HasErrors ? 1 : 0;
     }
 }

@@ -4,216 +4,199 @@ using Kanata.ProjectSystem.ProjectModel;
 namespace Kanata.ProjectSystem.Validation;
 
 /// <summary>
-/// Validates Kanata project models and referenced workspace paths.
+/// Validates Kanata project files before generation or build operations.
 /// </summary>
-public sealed partial class KanataProjectValidator
+public sealed class KanataProjectValidator
 {
     /// <summary>
-    /// Validates a Kanata project model.
+    /// Validates a loaded Kanata project model.
     /// </summary>
-    /// <param name="project">The project model to validate.</param>
-    /// <param name="projectFilePath">The path to the source project file.</param>
-    /// <returns>The validation result.</returns>
-    public ValidationResult Validate(KanataProject project, string projectFilePath)
+    /// <param name="project">Project model to validate.</param>
+    /// <param name="projectFilePath">Path to the source project file.</param>
+    /// <returns>Collected validation issues.</returns>
+    public ValidationResult Validate(KanataProject? project, string projectFilePath)
     {
-        ArgumentNullException.ThrowIfNull(project);
         ArgumentException.ThrowIfNullOrWhiteSpace(projectFilePath);
 
         var result = new ValidationResult();
-        var projectDirectory = Path.GetDirectoryName(Path.GetFullPath(projectFilePath)) ?? Directory.GetCurrentDirectory();
 
-        ValidateHeader(project, result);
-        ValidatePaths(project, projectDirectory, result);
-        ValidateSourceProjects(project, projectDirectory, result);
+        if (project is null)
+        {
+            result.AddError("KANATA001", "Project file could not be loaded.", projectFilePath);
+            return result;
+        }
+
+        var projectRoot = GetProjectRoot(projectFilePath);
+
+        ValidateIdentity(project, result);
+        ValidatePaths(project, projectRoot, result);
+        ValidateSourceProjects(project, projectRoot, result);
         ValidateFeatures(project, result);
-        ValidateTargets(project, projectDirectory, result);
-        ValidateStart(project, projectDirectory, result);
+        ValidateTargets(project, projectRoot, result);
+        ValidateStart(project, projectRoot, result);
 
         return result;
     }
 
-    private static void ValidateHeader(KanataProject project, ValidationResult result)
+    private static void ValidateIdentity(KanataProject project, ValidationResult result)
     {
-        if (string.IsNullOrWhiteSpace(project.Format))
+        if (!string.Equals(project.Format, KanataProjectFormat.Project, StringComparison.Ordinal))
         {
-            result.AddError("KANATA001", "Project format is required.", "format");
-        }
-        else if (!string.Equals(project.Format, KanataProjectFormat.Format, StringComparison.Ordinal))
-        {
-            result.AddError("KANATA002", $"Project format must be '{KanataProjectFormat.Format}'.", "format");
+            result.AddError("KANATA010", $"Project format must be '{KanataProjectFormat.Project}'.", "format");
         }
 
-        if (project.SchemaVersion <= 0)
+        if (project.SchemaVersion != KanataProjectFormat.SupportedSchemaVersion)
         {
-            result.AddError("KANATA003", "Project schema version is required.", "schemaVersion");
-        }
-        else if (project.SchemaVersion > KanataProjectFormat.CurrentSchemaVersion)
-        {
-            result.AddError("KANATA004", $"Project schema version {project.SchemaVersion} is not supported by this Kanata.ProjectSystem version.", "schemaVersion");
-        }
-        else if (project.SchemaVersion < KanataProjectFormat.CurrentSchemaVersion)
-        {
-            result.AddWarning("KANATA005", $"Project schema version {project.SchemaVersion} is older than the current version {KanataProjectFormat.CurrentSchemaVersion}.", "schemaVersion");
+            result.AddError(
+                "KANATA011",
+                $"Project schema version '{project.SchemaVersion}' is not supported. Supported version: {KanataProjectFormat.SupportedSchemaVersion}.",
+                "schemaVersion");
         }
 
         if (string.IsNullOrWhiteSpace(project.Id))
         {
-            result.AddError("KANATA006", "Project id is required.", "id");
+            result.AddError("KANATA012", "Project id is required.", "id");
         }
-        else if (!ProjectIdRegex().IsMatch(project.Id))
+        else if (!Regex.IsMatch(project.Id, "^[a-z0-9][a-z0-9.-]*[a-z0-9]$|^[a-z0-9]$", RegexOptions.CultureInvariant))
         {
-            result.AddError("KANATA007", "Project id must contain only lowercase letters, digits, dots, and hyphens, and must start with a letter or digit.", "id");
+            result.AddWarning("KANATA013", "Project id should use lowercase letters, digits, dots or hyphens.", "id");
         }
 
         if (string.IsNullOrWhiteSpace(project.Name))
         {
-            result.AddError("KANATA008", "Project name is required.", "name");
+            result.AddError("KANATA014", "Project name is required.", "name");
         }
 
         if (string.IsNullOrWhiteSpace(project.KanataVersion))
         {
-            result.AddError("KANATA009", "Kanata SDK version is required.", "kanataVersion");
+            result.AddError("KANATA015", "Kanata SDK version is required.", "kanataVersion");
         }
     }
 
-    private static void ValidatePaths(KanataProject project, string projectDirectory, ValidationResult result)
+    private static void ValidatePaths(KanataProject project, string projectRoot, ValidationResult result)
     {
-        CheckDirectory(project.Paths.Content, "paths.content", projectDirectory, result, required: true);
-        CheckDirectory(project.Paths.Source, "paths.source", projectDirectory, result, required: true);
-        CheckDirectory(project.Paths.Generated, "paths.generated", projectDirectory, result, required: false);
-        CheckDirectory(project.Paths.Settings, "paths.settings", projectDirectory, result, required: true);
+        if (project.Paths is null)
+        {
+            result.AddError("KANATA020", "Paths section is required.", "paths");
+            return;
+        }
+
+        ValidateRequiredDirectory(projectRoot, project.Paths.Content, "paths.content", result);
+        ValidateRequiredDirectory(projectRoot, project.Paths.Source, "paths.source", result);
+        ValidateRequiredDirectory(projectRoot, project.Paths.Generated, "paths.generated", result);
+        ValidateRequiredDirectory(projectRoot, project.Paths.Settings, "paths.settings", result);
     }
 
-    private static void ValidateSourceProjects(KanataProject project, string projectDirectory, ValidationResult result)
+    private static void ValidateSourceProjects(KanataProject project, string projectRoot, ValidationResult result)
     {
-        CheckFile(project.Source.Shared, "source.shared", projectDirectory, result, required: true, expectedExtension: ".csproj");
-        CheckFile(project.Source.Logic, "source.logic", projectDirectory, result, required: true, expectedExtension: ".csproj");
-        CheckFile(project.Source.View, "source.view", projectDirectory, result, required: true, expectedExtension: ".csproj");
+        if (project.Source is null)
+        {
+            result.AddError("KANATA030", "Source section is required.", "source");
+            return;
+        }
+
+        ValidateRequiredFile(projectRoot, project.Source.Shared, "source.shared", result);
+        ValidateRequiredFile(projectRoot, project.Source.Logic, "source.logic", result);
+        ValidateRequiredFile(projectRoot, project.Source.View, "source.view", result);
     }
 
     private static void ValidateFeatures(KanataProject project, ValidationResult result)
     {
         if (project.Features.Count == 0)
         {
-            result.AddWarning("KANATA020", "Project has no requested features.", "features");
+            result.AddWarning("KANATA040", "Project does not declare any features.", "features");
             return;
         }
 
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        for (var index = 0; index < project.Features.Count; index++)
+        var duplicates = project.Features
+            .Where(feature => !string.IsNullOrWhiteSpace(feature))
+            .GroupBy(feature => feature, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToArray();
+
+        foreach (var duplicate in duplicates)
         {
-            var feature = project.Features[index];
-            var location = $"features[{index}]";
-
-            if (string.IsNullOrWhiteSpace(feature))
-            {
-                result.AddError("KANATA021", "Feature id cannot be empty.", location);
-                continue;
-            }
-
-            if (!seen.Add(feature))
-            {
-                result.AddWarning("KANATA022", $"Feature '{feature}' is listed more than once.", location);
-            }
+            result.AddWarning("KANATA041", $"Feature '{duplicate}' is declared more than once.", "features");
         }
     }
 
-    private static void ValidateTargets(KanataProject project, string projectDirectory, ValidationResult result)
+    private static void ValidateTargets(KanataProject project, string projectRoot, ValidationResult result)
     {
         if (project.Targets.Count == 0)
         {
-            result.AddError("KANATA030", "Project must define at least one target.", "targets");
+            result.AddError("KANATA050", "At least one build target is required.", "targets");
             return;
         }
 
         foreach (var (targetName, target) in project.Targets)
         {
-            var targetLocation = $"targets.{targetName}";
+            var targetPath = $"targets.{targetName}";
 
-            if (string.IsNullOrWhiteSpace(targetName))
+            if (string.IsNullOrWhiteSpace(target.Platform))
             {
-                result.AddError("KANATA031", "Target name cannot be empty.", "targets");
+                result.AddError("KANATA051", $"Target '{targetName}' must declare a platform.", $"{targetPath}.platform");
             }
 
-            CheckRequiredText(target.Platform, $"{targetLocation}.platform", "Target platform is required.", result, "KANATA032");
-            CheckRequiredText(target.Backend, $"{targetLocation}.backend", "Target backend is required.", result, "KANATA033");
-            CheckRequiredText(target.Session, $"{targetLocation}.session", "Target session is required.", result, "KANATA034");
-            CheckFile(target.HostProject, $"{targetLocation}.hostProject", projectDirectory, result, required: true, expectedExtension: ".csproj");
+            if (string.IsNullOrWhiteSpace(target.Backend))
+            {
+                result.AddError("KANATA052", $"Target '{targetName}' must declare a backend.", $"{targetPath}.backend");
+            }
+
+            if (string.IsNullOrWhiteSpace(target.Session))
+            {
+                result.AddError("KANATA053", $"Target '{targetName}' must declare a session mode.", $"{targetPath}.session");
+            }
+
+            ValidateRequiredFile(projectRoot, target.HostProject, $"{targetPath}.hostProject", result);
         }
     }
 
-    private static void ValidateStart(KanataProject project, string projectDirectory, ValidationResult result)
+    private static void ValidateStart(KanataProject project, string projectRoot, ValidationResult result)
     {
-        CheckFile(project.Start.Scene, "start.scene", projectDirectory, result, required: true, expectedExtension: ".kscene");
-    }
-
-    private static void CheckDirectory(string path, string location, string projectDirectory, ValidationResult result, bool required)
-    {
-        if (string.IsNullOrWhiteSpace(path))
+        if (project.Start is null)
         {
-            if (required)
-            {
-                result.AddError("KANATA040", "Directory path is required.", location);
-            }
-
+            result.AddError("KANATA060", "Start section is required.", "start");
             return;
         }
 
-        var fullPath = Resolve(projectDirectory, path);
+        ValidateRequiredFile(projectRoot, project.Start.Scene, "start.scene", result);
+    }
+
+    private static void ValidateRequiredDirectory(string projectRoot, string? relativePath, string fieldPath, ValidationResult result)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath))
+        {
+            result.AddError("KANATA070", "Directory path is required.", fieldPath);
+            return;
+        }
+
+        var fullPath = Path.GetFullPath(Path.Combine(projectRoot, relativePath));
+
         if (!Directory.Exists(fullPath))
         {
-            var message = required
-                ? $"Required directory '{path}' does not exist."
-                : $"Optional directory '{path}' does not exist and will be created when needed.";
-
-            if (required)
-            {
-                result.AddError("KANATA041", message, location);
-            }
-            else
-            {
-                result.AddWarning("KANATA042", message, location);
-            }
+            result.AddError("KANATA071", $"Directory does not exist: {relativePath}", fieldPath);
         }
     }
 
-    private static void CheckFile(string path, string location, string projectDirectory, ValidationResult result, bool required, string expectedExtension)
+    private static void ValidateRequiredFile(string projectRoot, string? relativePath, string fieldPath, ValidationResult result)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(relativePath))
         {
-            if (required)
-            {
-                result.AddError("KANATA050", "File path is required.", location);
-            }
-
+            result.AddError("KANATA080", "File path is required.", fieldPath);
             return;
         }
 
-        if (!string.Equals(Path.GetExtension(path), expectedExtension, StringComparison.OrdinalIgnoreCase))
-        {
-            result.AddError("KANATA051", $"File path must point to a '{expectedExtension}' file.", location);
-        }
+        var fullPath = Path.GetFullPath(Path.Combine(projectRoot, relativePath));
 
-        var fullPath = Resolve(projectDirectory, path);
         if (!File.Exists(fullPath))
         {
-            result.AddError("KANATA052", $"Required file '{path}' does not exist.", location);
+            result.AddError("KANATA081", $"File does not exist: {relativePath}", fieldPath);
         }
     }
 
-    private static void CheckRequiredText(string value, string location, string message, ValidationResult result, string code)
+    private static string GetProjectRoot(string projectFilePath)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            result.AddError(code, message, location);
-        }
+        return Path.GetDirectoryName(Path.GetFullPath(projectFilePath)) ?? Directory.GetCurrentDirectory();
     }
-
-    private static string Resolve(string projectDirectory, string path)
-    {
-        return Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(projectDirectory, path));
-    }
-
-    [GeneratedRegex("^[a-z0-9][a-z0-9.-]*$", RegexOptions.CultureInvariant)]
-    private static partial Regex ProjectIdRegex();
 }

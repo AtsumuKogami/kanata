@@ -1,17 +1,22 @@
 namespace Kanata.ProjectSystem.Validation;
 
 /// <summary>
-/// Describes the severity of a project validation issue.
+/// Defines severity levels for project validation issues.
 /// </summary>
 public enum ValidationSeverity
 {
     /// <summary>
-    /// Indicates a non-blocking validation issue.
+    /// Indicates a non-blocking validation message.
+    /// </summary>
+    Info,
+
+    /// <summary>
+    /// Indicates a suspicious but non-blocking project configuration.
     /// </summary>
     Warning,
 
     /// <summary>
-    /// Indicates a blocking validation issue.
+    /// Indicates a validation issue that blocks build operations.
     /// </summary>
-    Error
+    Error,
 }

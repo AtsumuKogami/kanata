@@ -2,7 +2,6 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://schemas.kanata.dev/project/v1/kanata.project.schema.json",
   "title": "Kanata Project",
-  "description": "Kanata project file schema.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -25,12 +24,11 @@
       "const": "kanata.project"
     },
     "schemaVersion": {
-      "type": "integer",
       "const": 1
     },
     "id": {
       "type": "string",
-      "pattern": "^[a-z0-9][a-z0-9.-]*$"
+      "pattern": "^[a-z0-9][a-z0-9.-]*[a-z0-9]$|^[a-z0-9]$"
     },
     "name": {
       "type": "string",
@@ -44,51 +42,14 @@
       "minLength": 1
     },
     "paths": {
-      "$ref": "#/$defs/paths"
-    },
-    "source": {
-      "$ref": "#/$defs/source"
-    },
-    "features": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "targets": {
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": {
-        "$ref": "#/$defs/target"
-      }
-    },
-    "start": {
-      "$ref": "#/$defs/start"
-    }
-  },
-  "$defs": {
-    "paths": {
       "type": "object",
       "additionalProperties": false,
       "required": ["content", "source", "generated", "settings"],
       "properties": {
-        "content": {
-          "type": "string",
-          "minLength": 1
-        },
-        "source": {
-          "type": "string",
-          "minLength": 1
-        },
-        "generated": {
-          "type": "string",
-          "minLength": 1
-        },
-        "settings": {
-          "type": "string",
-          "minLength": 1
-        }
+        "content": { "type": "string" },
+        "source": { "type": "string" },
+        "generated": { "type": "string" },
+        "settings": { "type": "string" }
       }
     },
     "source": {
@@ -96,40 +57,27 @@
       "additionalProperties": false,
       "required": ["shared", "logic", "view"],
       "properties": {
-        "shared": {
-          "type": "string",
-          "minLength": 1
-        },
-        "logic": {
-          "type": "string",
-          "minLength": 1
-        },
-        "view": {
-          "type": "string",
-          "minLength": 1
-        }
+        "shared": { "type": "string" },
+        "logic": { "type": "string" },
+        "view": { "type": "string" }
       }
     },
-    "target": {
+    "features": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "targets": {
       "type": "object",
-      "additionalProperties": false,
-      "required": ["platform", "backend", "hostProject", "session"],
-      "properties": {
-        "platform": {
-          "type": "string",
-          "minLength": 1
-        },
-        "backend": {
-          "type": "string",
-          "minLength": 1
-        },
-        "hostProject": {
-          "type": "string",
-          "minLength": 1
-        },
-        "session": {
-          "type": "string",
-          "minLength": 1
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["platform", "backend", "hostProject", "session"],
+        "properties": {
+          "platform": { "type": "string" },
+          "backend": { "type": "string" },
+          "hostProject": { "type": "string" },
+          "session": { "type": "string" }
         }
       }
     },
@@ -138,10 +86,7 @@
       "additionalProperties": false,
       "required": ["scene"],
       "properties": {
-        "scene": {
-          "type": "string",
-          "minLength": 1
-        }
+        "scene": { "type": "string" }
       }
     }
   }

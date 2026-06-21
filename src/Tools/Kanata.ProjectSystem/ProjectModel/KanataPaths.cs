@@ -3,31 +3,31 @@ using System.Text.Json.Serialization;
 namespace Kanata.ProjectSystem.ProjectModel;
 
 /// <summary>
-/// Describes the main folders of a Kanata workspace.
+/// Describes standard folders in a Kanata project workspace.
 /// </summary>
 public sealed class KanataPaths
 {
     /// <summary>
-    /// Gets the folder containing game content files.
+    /// Gets the content folder path.
     /// </summary>
     [JsonPropertyName("content")]
-    public string Content { get; init; } = string.Empty;
+    public string? Content { get; init; }
 
     /// <summary>
-    /// Gets the folder containing game source projects.
+    /// Gets the source folder path.
     /// </summary>
     [JsonPropertyName("source")]
-    public string Source { get; init; } = string.Empty;
+    public string? Source { get; init; }
 
     /// <summary>
-    /// Gets the folder containing generated build files and caches.
+    /// Gets the generated files folder path.
     /// </summary>
     [JsonPropertyName("generated")]
-    public string Generated { get; init; } = string.Empty;
+    public string? Generated { get; init; }
 
     /// <summary>
-    /// Gets the folder containing project-level settings.
+    /// Gets the project settings folder path.
     /// </summary>
     [JsonPropertyName("settings")]
-    public string Settings { get; init; } = string.Empty;
+    public string? Settings { get; init; }
 }

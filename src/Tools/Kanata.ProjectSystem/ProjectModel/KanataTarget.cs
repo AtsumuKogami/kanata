@@ -3,31 +3,31 @@ using System.Text.Json.Serialization;
 namespace Kanata.ProjectSystem.ProjectModel;
 
 /// <summary>
-/// Describes a concrete build target of a Kanata project.
+/// Describes a concrete build target for a Kanata project.
 /// </summary>
 public sealed class KanataTarget
 {
     /// <summary>
-    /// Gets the logical platform name of the target.
+    /// Gets the logical platform name.
     /// </summary>
     [JsonPropertyName("platform")]
-    public string Platform { get; init; } = string.Empty;
+    public string? Platform { get; init; }
 
     /// <summary>
-    /// Gets the backend component used by the target.
+    /// Gets the backend provider identifier.
     /// </summary>
     [JsonPropertyName("backend")]
-    public string Backend { get; init; } = string.Empty;
+    public string? Backend { get; init; }
 
     /// <summary>
-    /// Gets the host C# project used to build or run the target.
+    /// Gets the host C# project path used for this target.
     /// </summary>
     [JsonPropertyName("hostProject")]
-    public string HostProject { get; init; } = string.Empty;
+    public string? HostProject { get; init; }
 
     /// <summary>
-    /// Gets the session mode used by the target.
+    /// Gets the session mode used by this target.
     /// </summary>
     [JsonPropertyName("session")]
-    public string Session { get; init; } = string.Empty;
+    public string? Session { get; init; }
 }

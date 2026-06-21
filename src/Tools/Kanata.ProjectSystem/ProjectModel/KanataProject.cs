@@ -3,12 +3,12 @@ using System.Text.Json.Serialization;
 namespace Kanata.ProjectSystem.ProjectModel;
 
 /// <summary>
-/// Represents the root model of a Kanata project file.
+/// Represents a Kanata project file loaded from disk.
 /// </summary>
 public sealed class KanataProject
 {
     /// <summary>
-    /// Gets the optional JSON schema URL used by editors.
+    /// Gets the optional JSON schema reference used by editors.
     /// </summary>
     [JsonPropertyName("$schema")]
     public string? Schema { get; init; }
@@ -17,7 +17,7 @@ public sealed class KanataProject
     /// Gets the project file format identifier.
     /// </summary>
     [JsonPropertyName("format")]
-    public string Format { get; init; } = string.Empty;
+    public string? Format { get; init; }
 
     /// <summary>
     /// Gets the project file schema version.
@@ -29,53 +29,53 @@ public sealed class KanataProject
     /// Gets the stable project identifier.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; init; } = string.Empty;
+    public string? Id { get; init; }
 
     /// <summary>
     /// Gets the human-readable project name.
     /// </summary>
     [JsonPropertyName("name")]
-    public string Name { get; init; } = string.Empty;
+    public string? Name { get; init; }
 
     /// <summary>
-    /// Gets the optional version of the game project.
+    /// Gets the game or application version.
     /// </summary>
     [JsonPropertyName("projectVersion")]
     public string? ProjectVersion { get; init; }
 
     /// <summary>
-    /// Gets the Kanata SDK version requested by the project.
+    /// Gets the Kanata SDK version expected by the project.
     /// </summary>
     [JsonPropertyName("kanataVersion")]
-    public string KanataVersion { get; init; } = string.Empty;
+    public string? KanataVersion { get; init; }
 
     /// <summary>
-    /// Gets the main workspace paths used by the project.
+    /// Gets project folder paths.
     /// </summary>
     [JsonPropertyName("paths")]
-    public KanataPaths Paths { get; init; } = new();
+    public KanataPaths? Paths { get; init; }
 
     /// <summary>
-    /// Gets the C# source projects used by the game.
+    /// Gets source project references used by Kanata builds.
     /// </summary>
     [JsonPropertyName("source")]
-    public KanataSourceProjects Source { get; init; } = new();
+    public KanataSourceProjects? Source { get; init; }
 
     /// <summary>
-    /// Gets the requested high-level engine features.
+    /// Gets high-level features requested by the project.
     /// </summary>
     [JsonPropertyName("features")]
-    public List<string> Features { get; init; } = new();
+    public List<string> Features { get; init; } = [];
 
     /// <summary>
-    /// Gets the configured build targets.
+    /// Gets build targets declared by the project.
     /// </summary>
     [JsonPropertyName("targets")]
-    public Dictionary<string, KanataTarget> Targets { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, KanataTarget> Targets { get; init; } = [];
 
     /// <summary>
-    /// Gets the startup settings used when running the game.
+    /// Gets startup settings for the project.
     /// </summary>
     [JsonPropertyName("start")]
-    public KanataStartSettings Start { get; init; } = new();
+    public KanataStartSettings? Start { get; init; }
 }
