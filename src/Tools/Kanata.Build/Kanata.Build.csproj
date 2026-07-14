@@ -4,7 +4,6 @@
     <TargetFramework>$(KanataTargetFramework)</TargetFramework>
     <AssemblyName>Kanata.Build</AssemblyName>
     <RootNamespace>Kanata.Build</RootNamespace>
-
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>kanata</ToolCommandName>
     <PackageId>Kanata.Build</PackageId>
@@ -13,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Kanata.Packaging\Kanata.Packaging.csproj" />
     <ProjectReference Include="..\Kanata.ProjectSystem\Kanata.ProjectSystem.csproj" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(KanataTargetFramework)</TargetFramework>
+    <AssemblyName>Kanata.Packaging</AssemblyName>
+    <RootNamespace>Kanata.Packaging</RootNamespace>
+  </PropertyGroup>
+</Project>
