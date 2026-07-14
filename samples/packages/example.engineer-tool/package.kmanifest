@@ -1,0 +1,27 @@
+{
+  "format": "kanata.package",
+  "schemaVersion": 1,
+  "packageId": "example.engineer",
+  "version": "0.1.0",
+  "displayName": "Example Engineer Tool",
+  "description": "Minimal example tool package for KPKG writer verification.",
+  "installables": [
+    {
+      "id": "example.engineer",
+      "version": "0.1.0",
+      "kind": "tool",
+      "description": "Example engineering tool provider.",
+      "provides": ["kanata.engineering"],
+      "dependencies": [],
+      "compatibility": {
+        "kanataToolVersion": "[0.1.0,)",
+        "platforms": ["windows"],
+        "architectures": ["x64", "arm64"]
+      },
+      "gameParticipation": {
+        "build": false,
+        "runtime": false
+      }
+    }
+  ]
+}

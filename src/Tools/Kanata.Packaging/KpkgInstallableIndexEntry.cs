@@ -37,6 +37,13 @@ public sealed class KpkgInstallableIndexEntry
     [JsonPropertyName("provides")]
     public IReadOnlyList<string> Provides { get; init; } = [];
 
+
+    /// <summary>
+    /// Gets component ids required by the installable before it can be used.
+    /// </summary>
+    [JsonPropertyName("dependencies")]
+    public IReadOnlyList<string> Dependencies { get; init; } = [];
+
     /// <summary>
     /// Gets compatibility metadata used before installation.
     /// </summary>

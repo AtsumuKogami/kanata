@@ -18,4 +18,14 @@ internal static class KpkgHex
             throw new KpkgFormatException($"{fieldName} is not valid hexadecimal: {exception.Message}");
         }
     }
+
+    public static string EncodeSha256(byte[] value)
+    {
+        if (value.Length != 32)
+        {
+            throw new KpkgFormatException("SHA-256 hash must be 32 bytes.");
+        }
+
+        return Convert.ToHexString(value).ToLowerInvariant();
+    }
 }

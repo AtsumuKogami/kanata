@@ -1,0 +1,41 @@
+{
+  "format": "kanata.tool",
+  "schemaVersion": 1,
+  "id": "example.engineer",
+  "version": "0.1.0",
+  "kind": "tool",
+  "description": "Example engineering tool provider.",
+  "provides": ["kanata.engineering"],
+  "commands": [
+    {
+      "name": "example-engineer",
+      "description": "Runs the example Engineer tool.",
+      "entryPoint": {
+        "kind": "dotnet-assembly",
+        "path": "artifacts/tools/example.engineer/example.engineer.txt"
+      },
+      "launchMode": "process"
+    }
+  ],
+  "compatibility": {
+    "kanataToolVersion": "[0.1.0,)",
+    "platforms": ["windows"],
+    "architectures": ["x64", "arm64"]
+  },
+  "gameParticipation": {
+    "build": false,
+    "runtime": false
+  },
+  "artifacts": [
+    {
+      "role": "tool-placeholder",
+      "path": "artifacts/tools/example.engineer/example.engineer.txt"
+    }
+  ],
+  "sources": [
+    {
+      "role": "source-readme",
+      "path": "sources/example.engineer/README.md"
+    }
+  ]
+}
