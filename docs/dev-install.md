@@ -1,6 +1,13 @@
 # Kanata development install
 
+Status: current implementation notes  
+Scope: installing Kanata as a local development CLI tool
+
+## Purpose
+
 Kanata can be tested as an installed command line tool instead of being launched from the repository with `dotnet run`.
+
+This is useful for checking how users will run Kanata from normal game projects.
 
 ## Install development tool
 
@@ -68,5 +75,15 @@ kanata play
 
 This gives two scenarios:
 
-- repository mode for developing Kanata itself;
-- installed tool mode for checking how users will run Kanata.
+| Scenario | Purpose |
+|---|---|
+| Repository mode | Developing Kanata itself. |
+| Installed tool mode | Checking how users will run Kanata. |
+
+## Relation to future package installation
+
+Development install installs the Kanata CLI itself.
+
+`.kpkg` installation will install Kanata components and tools into the Kanata package store.
+
+These are related but separate operations.

@@ -1,14 +1,26 @@
 # Kanata component build cache v1
 
+Status: current implementation notes  
+Scope: local source component build cache
+
+## Purpose
+
 Kanata can build bundled source components into versioned local artifacts.
 
-The first cache implementation is local to the engine repository:
+The first cache implementation is local to the engine repository.
+
+## Current layout
 
 ```text
-.kanata/cache/components/<component-id>/<version>/<configuration>/
-  lib/<target-framework>/<assembly>.dll
-  kanata.component.json
-  build-info.json
+.kanata/cache/components/
+  <component-id>/
+    <version>/
+      <configuration>/
+        lib/
+          <target-framework>/
+            <assembly>.dll
+        kanata.component.json
+        build-info.json
 ```
 
 Examples:
@@ -37,7 +49,9 @@ kanata play desktop Debug
 
 ## Cache rule
 
-For local source components, Kanata uses a source fingerprint. The fingerprint includes:
+For local source components, Kanata uses a source fingerprint.
+
+The fingerprint includes:
 
 - component id;
 - resolved component version;
@@ -48,6 +62,12 @@ For local source components, Kanata uses a source fingerprint. The fingerprint i
 - component `.cs` files;
 - repository `Directory.Build.props`.
 
-This means a source component is skipped when its cached artifact exists and its fingerprint did not change.
+A source component is skipped when its cached artifact exists and its fingerprint did not change.
 
-For future downloaded binary components, the version itself is expected to be immutable. In that mode Kanata will not rebuild the component from source.
+## Relation to package mode
+
+For future downloaded binary or package components, the version and package content are expected to be immutable.
+
+In package mode, Kanata should not rebuild the component from source. Instead it should use installed package metadata and payload files prepared by `.kpkg` installation.
+
+The local source cache remains useful for Kanata engine development and local component development.

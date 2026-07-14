@@ -1,5 +1,8 @@
 # Kanata CLI
 
+Status: current implementation notes with planned package commands  
+Scope: global commands, project commands, engine commands, and package command direction
+
 ## Global commands
 
 Global commands can be executed from any directory.
@@ -38,7 +41,7 @@ kanata build desktop Release
 kanata play desktop Debug
 ```
 
-Project commands do not search parent directories. This keeps the command behavior predictable and makes the project root explicit.
+Project commands do not search parent directories. This keeps command behavior predictable and makes the project root explicit.
 
 ## Restore and lock file
 
@@ -54,7 +57,9 @@ kanata restore
 validate -> restore -> generate -> build/play
 ```
 
-The current dev lock file contains machine-local paths to components restored from the local Kanata source repository. Generated game projects ignore `Kanata.lock.json` for now. Later release package restore will make the lock file portable and suitable for source control.
+The current dev lock file contains machine-local paths to components restored from the local Kanata source repository.
+
+Generated game projects ignore `Kanata.lock.json` for now. Later package restore will make the lock file portable and suitable for source control.
 
 ## Engine component cache
 
@@ -71,3 +76,29 @@ To force component rebuilds during a project build:
 ```powershell
 kanata build --force-engine
 ```
+
+## Planned package commands
+
+The package commands are planned as the first CLI surface for `.kpkg`.
+
+Initial scope:
+
+```powershell
+kanata package info <file.kpkg>
+kanata package verify <file.kpkg>
+kanata package pack <source>
+kanata package install <file.kpkg>
+```
+
+Expected behavior:
+
+| Command | Reads payload | Installs package | Writes registry | Purpose |
+|---|---:|---:|---:|---|
+| `package info` | no | no | no | Print package and installable metadata. |
+| `package verify` | yes | no | no | Validate hashes, block ranges, descriptors, and file table. |
+| `package pack` | yes | no | no | Create a `.kpkg` from source manifests and artifacts. |
+| `package install` | yes | yes | yes | Verify and install into the local Kanata package store. |
+
+Package install must not execute package code.
+
+Tool commands provided by installed tool components are future environment state, not game project commands by default.
