@@ -4,11 +4,9 @@
     <TargetFramework>$(KanataTargetFramework)</TargetFramework>
     <AssemblyName>Kanata.Build</AssemblyName>
     <RootNamespace>Kanata.Build</RootNamespace>
-    <PackAsTool>true</PackAsTool>
-    <ToolCommandName>kanata</ToolCommandName>
     <PackageId>Kanata.Build</PackageId>
     <Authors>Kanata</Authors>
-    <Description>Kanata command line builder and project toolchain.</Description>
+    <Description>Kanata build and project command implementation.</Description>
   </PropertyGroup>
 
   <ItemGroup>

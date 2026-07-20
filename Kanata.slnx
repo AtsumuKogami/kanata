@@ -8,6 +8,7 @@
   </Folder>
   <Folder Name="/src/Tools/">
     <Project Path="src/Tools/Kanata.Build/Kanata.Build.csproj" />
+    <Project Path="src/Tools/Kanata.Cli/Kanata.Cli.csproj" />
     <Project Path="src/Tools/Kanata.Packaging/Kanata.Packaging.csproj" />
     <Project Path="src/Tools/Kanata.ProjectSystem/Kanata.ProjectSystem.csproj" />
   </Folder>

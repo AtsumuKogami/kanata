@@ -1,96 +1,66 @@
 # Kanata CLI
 
-Status: current implementation notes with planned package commands  
-Scope: global commands, project commands, engine commands, and package command direction
+Status: current CLI feature map.  
+Scope: installed `kanata` entrypoint, built-in package commands, tool package visibility, and currently direct project/build commands.
 
-## Global commands
+## Entrypoint
 
-Global commands can be executed from any directory.
+`Kanata.Cli` is the command-line bootstrap host for Kanata.
 
-```powershell
-kanata create MyGame
-kanata new MyGame
-kanata new game MyGame
-kanata engine build Debug
-kanata engine status Debug
-kanata version
-```
-
-`create` and `new` create a project in the current directory unless `--output` is provided.
-
-## Project commands
-
-Project commands must be executed from the project root directory that contains exactly one `.kanata` file.
+The installed command name is:
 
 ```powershell
-kanata validate
-kanata restore
-kanata generate
-kanata build
-kanata play
+kanata
 ```
 
-The default target is `desktop` and the default configuration is `Debug`.
+`Kanata.Cli` owns the stable entrypoint. Other tools may provide commands later, but the user-facing command remains `kanata`.
 
-Explicit target and configuration are supported:
+## Built-in bootstrap commands
 
-```powershell
-kanata restore desktop Release
-kanata generate desktop Release
-kanata build desktop Release
-kanata play desktop Debug
-```
-
-Project commands do not search parent directories. This keeps command behavior predictable and makes the project root explicit.
-
-## Restore and lock file
-
-`kanata restore` validates the project, resolves the required component graph for the selected target, builds missing local component artifacts, and writes `Kanata.lock.json`.
-
-```powershell
-kanata restore
-```
-
-`generate`, `build`, and `play` call restore automatically before doing their own work:
-
-```text
-validate -> restore -> generate -> build/play
-```
-
-The current dev lock file contains machine-local paths to components restored from the local Kanata source repository.
-
-Generated game projects ignore `Kanata.lock.json` for now. Later package restore will make the lock file portable and suitable for source control.
-
-## Engine component cache
-
-`kanata engine build Debug` builds bundled source components into `.kanata/cache/components`.
-
-Game builds call component preparation automatically through restore:
-
-```powershell
-kanata build
-```
-
-To force component rebuilds during a project build:
-
-```powershell
-kanata build --force-engine
-```
-
-## Planned package commands
-
-The package commands are planned as the first CLI surface for `.kpkg`.
-
-Initial scope:
+These commands are part of the bootstrap host and must be available without installing additional tool packages:
 
 ```powershell
 kanata package info <file.kpkg>
-kanata package verify <file.kpkg>
-kanata package pack <source>
-kanata package install <file.kpkg>
+kanata package verify <file.kpkg> [--fast]
+kanata package pack <source-folder> -o <output.kpkg> [--force]
+kanata package install <file.kpkg> [--force]
+kanata package list
+kanata package inspect [package-or-installable-id]
+kanata tool list
+kanata version
 ```
 
-Expected behavior:
+`package` commands are built into the Kanata CLI distribution because the package manager cannot depend on being installed through the package manager.
+
+`tool list` reads the local installed package registry and reports installed installables with `kind: tool`.
+
+## Current direct commands
+
+The following commands are currently routed directly by `Kanata.Cli` to existing command implementations:
+
+```powershell
+kanata create <name> [--output <path>] [--id <id>] [--force]
+kanata new <template> [--output <path>] [--id <id>] [--force]
+kanata new game <name> [--output <path>] [--id <id>] [--force]
+kanata validate
+kanata restore [target] [configuration] [--force-engine]
+kanata generate [target] [configuration] [--force-engine]
+kanata build [target] [configuration] [--force-engine]
+kanata play [target] [configuration] [--force-engine]
+kanata engine build [configuration] [--force]
+kanata engine status [configuration]
+```
+
+These commands are candidates for future tool packages:
+
+| Command group | Future package | Notes |
+|---|---|---|
+| `create`, `new`, `validate` | `kanata.project` | Project creation and validation surface. |
+| `restore`, `generate`, `build`, `play`, `engine` | `kanata.build` | Build pipeline and project execution surface. |
+
+Until dynamic tool routing is implemented, `Kanata.Cli` calls the existing command implementations directly.
+
+## Package commands
 
 | Command | Reads payload | Installs package | Writes registry | Purpose |
 |---|---:|---:|---:|---|
@@ -98,7 +68,34 @@ Expected behavior:
 | `package verify` | yes | no | no | Validate hashes, block ranges, descriptors, and file table. |
 | `package pack` | yes | no | no | Create a `.kpkg` from source manifests and artifacts. |
 | `package install` | yes | yes | yes | Verify and install into the local Kanata package store. |
+| `package list` | no | no | no | Print installed package registry records. |
+| `package inspect` | no | no | no | Inspect installed package usability, artifacts, dependencies, descriptors, and command entrypoints. |
 
 Package install must not execute package code.
 
-Tool commands provided by installed tool components are future environment state, not game project commands by default.
+## Local package store
+
+By default packages are installed to:
+
+```text
+%USERPROFILE%\.kanata\packages\
+```
+
+The store can be overridden with:
+
+```powershell
+$env:KANATA_PACKAGE_STORE = "D:\Dev\KanataStore"
+```
+
+## Examples
+
+```powershell
+kanata package list
+kanata package inspect kanata.backend.monogame
+kanata tool list
+kanata create MyGame
+cd MyGame
+kanata validate
+kanata build
+kanata play
+```

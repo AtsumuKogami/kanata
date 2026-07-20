@@ -35,8 +35,8 @@ function Pack-KanataPackage {
         [string]$OutputPath
     )
 
-    dotnet run --project src/Tools/Kanata.Build -- package pack $PackageDirectory -o $OutputPath --force
-    dotnet run --project src/Tools/Kanata.Build -- package verify $OutputPath
+    dotnet run --project src/Tools/Kanata.Cli -- package pack $PackageDirectory -o $OutputPath --force
+    dotnet run --project src/Tools/Kanata.Cli -- package verify $OutputPath
 }
 
 Write-Host "Building Kanata solution..."
