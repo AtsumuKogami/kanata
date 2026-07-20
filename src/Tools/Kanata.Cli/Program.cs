@@ -74,6 +74,7 @@ internal static class Program
         Console.WriteLine(" kanata package list");
         Console.WriteLine(" kanata package inspect [package-or-installable-id]");
         Console.WriteLine(" kanata tool list");
+        Console.WriteLine(" kanata tool inspect <tool-id>");
         Console.WriteLine(" kanata version");
         Console.WriteLine();
         Console.WriteLine("Project and build commands currently routed directly, later supplied by tool packages:");
@@ -92,6 +93,7 @@ internal static class Program
         Console.WriteLine(" kanata package list");
         Console.WriteLine(" kanata package inspect kanata.backend.monogame");
         Console.WriteLine(" kanata tool list");
+        Console.WriteLine(" kanata tool inspect example.engineer");
         Console.WriteLine(" kanata create MyGame");
         Console.WriteLine(" cd MyGame");
         Console.WriteLine(" kanata validate");

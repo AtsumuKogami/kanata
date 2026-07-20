@@ -371,7 +371,7 @@ internal static class PackageCommand
         Console.WriteLine("Usage:");
         Console.WriteLine(" kanata package inspect [package-or-installable-id]");
         Console.WriteLine();
-        Console.WriteLine("Inspects installed package descriptors, artifacts, command entry points and dependencies.");
+        Console.WriteLine("Inspects installed package descriptors, artifacts, command entry points, UI surfaces and dependencies.");
         Console.WriteLine("This command does not run artifacts, fetch sourceRefs or build sources.");
     }
 
@@ -456,6 +456,16 @@ internal static class PackageCommand
             foreach (var command in installable.Commands)
             {
                 Console.WriteLine($"       - {command.Name} ({command.EntryPointKind}) {command.EntryPointPackagePath}: {(command.EntryPointExists ? "found" : "missing")}");
+            }
+        }
+
+        if (installable.Surfaces.Count > 0)
+        {
+            Console.WriteLine("      Surfaces:");
+            foreach (var surface in installable.Surfaces)
+            {
+                var title = string.IsNullOrWhiteSpace(surface.Title) ? surface.Id : surface.Title;
+                Console.WriteLine($"       - {surface.Id} {surface.Kind} '{title}' ({surface.EntryPointKind}) {surface.EntryPointPackagePath}: {(surface.EntryPointExists ? "found" : "missing")} {(surface.Optional ? "optional" : "required")}");
             }
         }
 

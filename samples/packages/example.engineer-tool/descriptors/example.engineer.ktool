@@ -5,7 +5,9 @@
   "version": "0.1.0",
   "kind": "tool",
   "description": "Example engineering tool provider.",
-  "provides": ["kanata.engineering"],
+  "provides": [
+    "kanata.engineering"
+  ],
   "commands": [
     {
       "name": "example-engineer",
@@ -14,13 +16,21 @@
         "kind": "dotnet-assembly",
         "path": "artifacts/tools/example.engineer/example.engineer.txt"
       },
-      "launchMode": "process"
+      "launchMode": "process",
+      "aliases": [],
+      "arguments": [],
+      "required": true
     }
   ],
   "compatibility": {
     "kanataToolVersion": "[0.1.0,)",
-    "platforms": ["windows"],
-    "architectures": ["x64", "arm64"]
+    "platforms": [
+      "windows"
+    ],
+    "architectures": [
+      "x64",
+      "arm64"
+    ]
   },
   "gameParticipation": {
     "build": false,

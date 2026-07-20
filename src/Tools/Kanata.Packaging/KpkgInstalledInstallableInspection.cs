@@ -41,6 +41,11 @@ public sealed class KpkgInstalledInstallableInspection
     public IReadOnlyList<KpkgInstalledCommandInspection> Commands { get; init; } = [];
 
     /// <summary>
+    /// Gets optional UI surface inspections declared by tool descriptors.
+    /// </summary>
+    public IReadOnlyList<KpkgInstalledSurfaceInspection> Surfaces { get; init; } = [];
+
+    /// <summary>
     /// Gets dependency inspections declared by the descriptor.
     /// </summary>
     public IReadOnlyList<KpkgInstalledDependencyInspection> Dependencies { get; init; } = [];
@@ -62,5 +67,6 @@ public sealed class KpkgInstalledInstallableInspection
         && Artifacts.Count > 0
         && Artifacts.All(artifact => artifact.Exists)
         && Dependencies.All(dependency => dependency.IsInstalled)
-        && Commands.All(command => command.EntryPointExists);
+        && Commands.All(command => command.EntryPointExists)
+        && Surfaces.Where(surface => !surface.Optional).All(surface => surface.EntryPointExists);
 }

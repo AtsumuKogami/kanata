@@ -317,6 +317,7 @@ public static class KpkgWriter
             ValidatePathArrayReferences(descriptor, "artifacts", payloadPaths);
             ValidatePathArrayReferences(descriptor, "sources", payloadPaths);
             ValidateCommandEntryPointReferences(descriptor, payloadPaths);
+            ValidateSurfaceEntryPointReferences(descriptor, payloadPaths);
         }
     }
 
@@ -365,6 +366,32 @@ public static class KpkgWriter
             if (!payloadPaths.Contains(path))
             {
                 throw new KpkgFormatException($"Descriptor {descriptor.Id} command entry point references missing payload file: {path}.");
+            }
+        }
+    }
+
+
+    private static void ValidateSurfaceEntryPointReferences(DescriptorNode descriptor, ISet<string> payloadPaths)
+    {
+        if (descriptor.Node["surfaces"] is not JsonArray surfaces)
+        {
+            return;
+        }
+
+        foreach (var surface in surfaces)
+        {
+            if (surface is not JsonObject surfaceObject
+                || surfaceObject["entryPoint"] is not JsonObject entryPoint
+                || entryPoint["path"] is null)
+            {
+                continue;
+            }
+
+            var path = GetRequiredString(entryPoint, "path", $"descriptor {descriptor.Id} surface entryPoint");
+            KpkgPathValidator.Validate(path);
+            if (!payloadPaths.Contains(path))
+            {
+                throw new KpkgFormatException($"Descriptor {descriptor.Id} surface entry point references missing payload file: {path}.");
             }
         }
     }

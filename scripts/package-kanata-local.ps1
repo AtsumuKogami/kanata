@@ -64,4 +64,15 @@ Pack-KanataPackage `
     -PackageDirectory $monoGamePackage `
     -OutputPath (Join-Path $OutputDirectory "kanata.backend.monogame-0.1.0.kpkg")
 
+$engineerPackage = "samples/packages/example.engineer-tool"
+$engineerArtifactDirectory = Join-Path $engineerPackage "artifacts/tools/example.engineer"
+New-Item -ItemType Directory -Force -Path $engineerArtifactDirectory | Out-Null
+Set-Content `
+    -Path (Join-Path $engineerArtifactDirectory "example.engineer.txt") `
+    -Value "Example Engineer tool placeholder artifact." `
+    -NoNewline
+Pack-KanataPackage `
+    -PackageDirectory $engineerPackage `
+    -OutputPath (Join-Path $OutputDirectory "example.engineer-0.1.0.kpkg")
+
 Write-Host "Packages written to $OutputDirectory"

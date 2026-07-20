@@ -128,6 +128,7 @@ public static class KpkgPackageInspector
             var artifacts = ReadPathArray(root, "artifacts", filesDirectory, problems).ToArray();
             var sources = ReadPathArray(root, "sources", filesDirectory, problems).ToArray();
             var commands = ReadCommands(root, filesDirectory, problems).ToArray();
+            var surfaces = ReadSurfaces(root, filesDirectory, problems).ToArray();
             var dependencies = ReadDependencies(root, registry).ToArray();
             var sourceReferenceCount = CountArray(root, "sourceRefs");
 
@@ -146,6 +147,11 @@ public static class KpkgPackageInspector
                 problems.Add($"Command entry point is missing: {command.Name} -> {command.EntryPointPackagePath}.");
             }
 
+            foreach (var surface in surfaces.Where(surface => !surface.Optional && !surface.EntryPointExists))
+            {
+                problems.Add($"Required surface entry point is missing: {surface.Id} -> {surface.EntryPointPackagePath}.");
+            }
+
             foreach (var dependency in dependencies.Where(dependency => !dependency.IsInstalled))
             {
                 problems.Add($"Dependency is not installed: {dependency.Id}.");
@@ -160,6 +166,7 @@ public static class KpkgPackageInspector
                 Artifacts = artifacts,
                 Sources = sources,
                 Commands = commands,
+                Surfaces = surfaces,
                 Dependencies = dependencies,
                 SourceReferenceCount = sourceReferenceCount,
                 Problems = problems
@@ -323,6 +330,72 @@ public static class KpkgPackageInspector
         }
     }
 
+
+    private static IEnumerable<KpkgInstalledSurfaceInspection> ReadSurfaces(
+        JsonElement root,
+        string filesDirectory,
+        List<string> problems)
+    {
+        if (!root.TryGetProperty("surfaces", out var array))
+        {
+            yield break;
+        }
+
+        if (array.ValueKind != JsonValueKind.Array)
+        {
+            problems.Add("Descriptor property 'surfaces' must be an array.");
+            yield break;
+        }
+
+        foreach (var surface in array.EnumerateArray())
+        {
+            if (surface.ValueKind != JsonValueKind.Object)
+            {
+                problems.Add("Descriptor property 'surfaces' contains a non-object item.");
+                continue;
+            }
+
+            var id = GetOptionalString(surface, "id");
+            if (!surface.TryGetProperty("entryPoint", out var entryPoint) || entryPoint.ValueKind != JsonValueKind.Object)
+            {
+                problems.Add($"Surface '{id}' does not declare an entryPoint object.");
+                continue;
+            }
+
+            var entryPointKind = GetOptionalString(entryPoint, "kind");
+            var entryPointPath = GetOptionalString(entryPoint, "path");
+            if (string.IsNullOrWhiteSpace(entryPointPath))
+            {
+                problems.Add($"Surface '{id}' does not declare entryPoint.path.");
+                continue;
+            }
+
+            string localPath;
+            try
+            {
+                localPath = ResolveInstalledPackagePath(filesDirectory, entryPointPath);
+            }
+            catch (KpkgFormatException exception)
+            {
+                problems.Add(exception.Message);
+                localPath = string.Empty;
+            }
+
+            yield return new KpkgInstalledSurfaceInspection
+            {
+                Id = id,
+                Kind = GetOptionalString(surface, "kind"),
+                Title = GetOptionalString(surface, "title"),
+                Optional = GetOptionalBool(surface, "optional", defaultValue: true),
+                EntryPointKind = entryPointKind,
+                EntryPointPackagePath = entryPointPath,
+                EntryPointLocalPath = localPath,
+                EntryPointExists = PathExists(localPath),
+                Platforms = ReadStringArray(surface, "platforms").ToArray()
+            };
+        }
+    }
+
     private static IEnumerable<KpkgInstalledDependencyInspection> ReadDependencies(
         JsonElement root,
         KpkgInstalledRegistryDocument registry)
@@ -360,6 +433,34 @@ public static class KpkgPackageInspector
         return registry.Packages.Any(package =>
             string.Equals(package.PackageId, dependencyId, StringComparison.Ordinal)
             || package.Installables.Any(installable => string.Equals(installable.Id, dependencyId, StringComparison.Ordinal)));
+    }
+
+
+    private static IEnumerable<string> ReadStringArray(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var array) || array.ValueKind != JsonValueKind.Array)
+        {
+            yield break;
+        }
+
+        foreach (var item in array.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.String)
+            {
+                var value = item.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    yield return value;
+                }
+            }
+        }
+    }
+
+    private static bool GetOptionalBool(JsonElement element, string propertyName, bool defaultValue)
+    {
+        return element.TryGetProperty(propertyName, out var property) && property.ValueKind is JsonValueKind.True or JsonValueKind.False
+            ? property.GetBoolean()
+            : defaultValue;
     }
 
     private static int CountArray(JsonElement root, string propertyName)

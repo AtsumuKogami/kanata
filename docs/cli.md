@@ -27,12 +27,13 @@ kanata package install <file.kpkg> [--force]
 kanata package list
 kanata package inspect [package-or-installable-id]
 kanata tool list
+kanata tool inspect <tool-id>
 kanata version
 ```
 
 `package` commands are built into the Kanata CLI distribution because the package manager cannot depend on being installed through the package manager.
 
-`tool list` reads the local installed package registry and reports installed installables with `kind: tool`.
+`tool list` and `tool inspect` read the local installed package registry, resolve installed `.ktool` descriptors, and report CLI commands plus optional UI surfaces declared by installed tool packages.
 
 ## Current direct commands
 
@@ -69,7 +70,7 @@ Until dynamic tool routing is implemented, `Kanata.Cli` calls the existing comma
 | `package pack` | yes | no | no | Create a `.kpkg` from source manifests and artifacts. |
 | `package install` | yes | yes | yes | Verify and install into the local Kanata package store. |
 | `package list` | no | no | no | Print installed package registry records. |
-| `package inspect` | no | no | no | Inspect installed package usability, artifacts, dependencies, descriptors, and command entrypoints. |
+| `package inspect` | no | no | no | Inspect installed package usability, artifacts, dependencies, descriptors, command entrypoints, and UI surfaces. |
 
 Package install must not execute package code.
 
@@ -93,6 +94,7 @@ $env:KANATA_PACKAGE_STORE = "D:\Dev\KanataStore"
 kanata package list
 kanata package inspect kanata.backend.monogame
 kanata tool list
+kanata tool inspect example.engineer
 kanata create MyGame
 cd MyGame
 kanata validate

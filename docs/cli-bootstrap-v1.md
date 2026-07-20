@@ -30,7 +30,7 @@ The following functionality is part of the installed Kanata CLI distribution:
 | Packaging | Read, verify, pack, install, list, and inspect `.kpkg` packages. |
 | Package store | Manage the local Kanata package store layout. |
 | Installed registry | Track installed package records. |
-| Tool visibility | List installed tool installables. |
+| Tool visibility | List and inspect installed tool packages, commands, and optional UI surfaces. |
 | Command routing foundation | Reserve the place where future package-provided commands will be dispatched. |
 
 Packaging is built-in because Kanata must be able to install or repair tool packages without depending on a package manager that is itself installed as a package.
@@ -43,7 +43,7 @@ These parts should be packageable tool components:
 |---|---|---|
 | `kanata.project` | `tool` | `create`, `new`, `validate` |
 | `kanata.build` | `tool` | `restore`, `generate`, `build`, `play`, `engine` |
-| `kanata.package.explorer` | `tool` | optional GUI surface for package inspection and package store management |
+| `kanata.package.explorer` | `tool` | package CLI helpers and optional GUI surface for package inspection and package store management |
 | `kanata.engineer` | `tool` | future engineering commands and optional UI surface |
 
 ## Command dispatch model
@@ -100,4 +100,4 @@ tool command routing
 automation-friendly commands
 ```
 
-The Hub can later use the same package services and installed registry, but the first refactor only establishes the CLI entrypoint.
+The Hub can use the same package services, installed registry, and tool surface metadata. Tool packages may declare optional GUI surfaces that the Hub or standalone launchers can expose later.

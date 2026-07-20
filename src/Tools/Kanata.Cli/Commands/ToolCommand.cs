@@ -17,6 +17,7 @@ internal static class ToolCommand
         var result = subcommand switch
         {
             "list" => RunList(subcommandArgs),
+            "inspect" => RunInspect(subcommandArgs),
             _ => UnknownSubcommand(subcommand),
         };
 
@@ -31,35 +32,162 @@ internal static class ToolCommand
             return 1;
         }
 
-        var store = KpkgPackageStore.Create();
-        var registry = KpkgInstalledRegistry.Read(store);
-        var toolInstallables = registry.Packages
-            .SelectMany(package => package.Installables.Select(installable => new
-            {
-                Package = package,
-                Installable = installable
-            }))
-            .Where(entry => string.Equals(entry.Installable.Kind, "tool", StringComparison.OrdinalIgnoreCase))
-            .OrderBy(entry => entry.Installable.Id, StringComparer.Ordinal)
-            .ThenBy(entry => entry.Installable.Version, StringComparer.Ordinal)
-            .ToArray();
+        var registry = KpkgToolRegistry.Read();
+        Console.WriteLine($"Package store: {registry.StoreRoot}");
 
-        if (toolInstallables.Length == 0)
+        if (registry.Tools.Count == 0)
         {
-            Console.WriteLine("No installed tool packages found.");
-            Console.WriteLine($"Store: {store.RootPath}");
+            Console.WriteLine("Installed tool packages: none");
             return 0;
         }
 
         Console.WriteLine("Installed tool packages:");
-        foreach (var entry in toolInstallables)
+        foreach (var tool in registry.Tools)
         {
-            Console.WriteLine($" - {entry.Installable.Id} {entry.Installable.Version}");
-            Console.WriteLine($"   Package: {entry.Package.PackageId} {entry.Package.Version}");
-            Console.WriteLine($"   Path: {entry.Package.InstalledPath}");
+            Console.WriteLine($" - {tool.Id} {tool.Version}");
+            Console.WriteLine($"   Status: {(tool.IsUsable ? "usable" : "not usable")}");
+            Console.WriteLine($"   Package: {tool.PackageId} {tool.PackageVersion}");
+            Console.WriteLine($"   Path: {tool.InstalledPath}");
+
+            if (tool.Commands.Count > 0)
+            {
+                Console.WriteLine($"   Commands: {string.Join(", ", tool.Commands.Select(command => command.Name))}");
+            }
+
+            if (tool.Surfaces.Count > 0)
+            {
+                Console.WriteLine($"   Surfaces: {string.Join(", ", tool.Surfaces.Select(FormatSurfaceSummary))}");
+            }
         }
 
-        return 0;
+        if (registry.Problems.Count > 0)
+        {
+            Console.WriteLine("Registry problems:");
+            foreach (var problem in registry.Problems)
+            {
+                Console.WriteLine($" - {problem}");
+            }
+        }
+
+        return registry.Problems.Count == 0 && registry.Tools.All(tool => tool.IsUsable) ? 0 : 1;
+    }
+
+    private static int RunInspect(string[] args)
+    {
+        if (args.Length != 1 || IsHelp(args[0]))
+        {
+            PrintInspectHelp();
+            return args.Length == 1 && IsHelp(args[0]) ? 0 : 1;
+        }
+
+        var targetId = args[0];
+        var registry = KpkgToolRegistry.Read(new KpkgToolRegistryOptions { TargetId = targetId });
+        Console.WriteLine($"Package store: {registry.StoreRoot}");
+
+        if (registry.Tools.Count == 0)
+        {
+            Console.WriteLine($"Installed tool package not found: {targetId}");
+            return 1;
+        }
+
+        Console.WriteLine("Installed tool inspection:");
+        foreach (var tool in registry.Tools)
+        {
+            PrintTool(tool);
+        }
+
+        if (registry.Problems.Count > 0)
+        {
+            Console.WriteLine("Registry problems:");
+            foreach (var problem in registry.Problems)
+            {
+                Console.WriteLine($" - {problem}");
+            }
+        }
+
+        return registry.Problems.Count == 0 && registry.Tools.All(tool => tool.IsUsable) ? 0 : 1;
+    }
+
+    private static void PrintTool(KpkgInstalledToolRecord tool)
+    {
+        Console.WriteLine($" - {tool.Id} {tool.Version}");
+        Console.WriteLine($"   Status: {(tool.IsUsable ? "usable" : "not usable")}");
+        Console.WriteLine($"   Package: {tool.PackageId} {tool.PackageVersion}");
+        Console.WriteLine($"   Hash: {tool.PackageSha256}");
+        Console.WriteLine($"   Path: {tool.InstalledPath}");
+        Console.WriteLine($"   Descriptor: {tool.DescriptorPath}");
+
+        if (tool.Provides.Count > 0)
+        {
+            Console.WriteLine($"   Provides: {string.Join(", ", tool.Provides)}");
+        }
+
+        if (tool.Commands.Count == 0)
+        {
+            Console.WriteLine("   Commands: none");
+        }
+        else
+        {
+            Console.WriteLine("   Commands:");
+            foreach (var command in tool.Commands)
+            {
+                Console.WriteLine($"    - {command.Name}");
+                if (!string.IsNullOrWhiteSpace(command.Description))
+                {
+                    Console.WriteLine($"      Description: {command.Description}");
+                }
+
+                if (command.Aliases.Count > 0)
+                {
+                    Console.WriteLine($"      Aliases: {string.Join(", ", command.Aliases)}");
+                }
+
+                Console.WriteLine($"      Entry point: {command.EntryPointKind} {command.EntryPointPackagePath}: {(command.EntryPointExists ? "found" : "missing")}");
+                Console.WriteLine($"      Launch mode: {command.LaunchMode}");
+                Console.WriteLine($"      Required: {(command.Required ? "yes" : "no")}");
+            }
+        }
+
+        if (tool.Surfaces.Count == 0)
+        {
+            Console.WriteLine("   Surfaces: none");
+        }
+        else
+        {
+            Console.WriteLine("   Surfaces:");
+            foreach (var surface in tool.Surfaces)
+            {
+                Console.WriteLine($"    - {surface.Id} {surface.Kind}");
+                if (!string.IsNullOrWhiteSpace(surface.Title))
+                {
+                    Console.WriteLine($"      Title: {surface.Title}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(surface.Description))
+                {
+                    Console.WriteLine($"      Description: {surface.Description}");
+                }
+
+                Console.WriteLine($"      Entry point: {surface.EntryPointKind} {surface.EntryPointPackagePath}: {(surface.EntryPointExists ? "found" : "missing")}");
+                Console.WriteLine($"      Optional: {(surface.Optional ? "yes" : "no")}");
+
+                if (surface.Platforms.Count > 0)
+                {
+                    Console.WriteLine($"      Platforms: {string.Join(", ", surface.Platforms)}");
+                }
+            }
+        }
+
+        foreach (var problem in tool.Problems)
+        {
+            Console.WriteLine($"   Problem: {problem}");
+        }
+    }
+
+    private static string FormatSurfaceSummary(KpkgToolSurfaceRecord surface)
+    {
+        var title = string.IsNullOrWhiteSpace(surface.Title) ? surface.Id : surface.Title;
+        return $"{surface.Kind}:{title}";
     }
 
     private static int UnknownSubcommand(string subcommand)
@@ -84,13 +212,20 @@ internal static class ToolCommand
         Console.WriteLine();
         Console.WriteLine("Usage:");
         Console.WriteLine(" kanata tool list");
+        Console.WriteLine(" kanata tool inspect <tool-id>");
         Console.WriteLine();
-        Console.WriteLine("Tool command routing is a bootstrap responsibility. This command currently reports installed tool packages from the local package store.");
+        Console.WriteLine("Tool command routing is a bootstrap responsibility. This command reports installed tool packages, CLI commands and optional UI surfaces from the local package store.");
     }
 
     private static void PrintListHelp()
     {
         Console.WriteLine("Usage:");
         Console.WriteLine(" kanata tool list");
+    }
+
+    private static void PrintInspectHelp()
+    {
+        Console.WriteLine("Usage:");
+        Console.WriteLine(" kanata tool inspect <tool-id>");
     }
 }
