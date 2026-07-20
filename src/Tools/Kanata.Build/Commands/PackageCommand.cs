@@ -22,6 +22,7 @@ internal static class PackageCommand
             "pack" => RunPack(subcommandArgs),
             "install" => RunInstall(subcommandArgs),
             "list" => RunList(subcommandArgs),
+            "inspect" => RunInspect(subcommandArgs),
             _ => UnknownSubcommand(subcommand),
         };
 
@@ -282,6 +283,30 @@ internal static class PackageCommand
         return 0;
     }
 
+    private static int RunInspect(string[] args)
+    {
+        if (args.Length > 1 || (args.Length == 1 && IsHelp(args[0])))
+        {
+            PrintInspectHelp();
+            return args.Length == 1 && IsHelp(args[0]) ? 0 : 1;
+        }
+
+        var targetId = args.Length == 1 ? args[0] : null;
+        var result = KpkgPackageInspector.Inspect(new KpkgPackageInspectorOptions
+        {
+            TargetId = targetId
+        });
+
+        PrintInspectionResult(result, targetId);
+        if (!string.IsNullOrWhiteSpace(targetId) && result.Packages.Count == 0)
+        {
+            return 1;
+        }
+
+        return result.IsUsable ? 0 : 1;
+    }
+
+
     private static int UnknownSubcommand(string subcommand)
     {
         Console.ForegroundColor = ConsoleColor.Red;
@@ -306,6 +331,7 @@ internal static class PackageCommand
         Console.WriteLine(" kanata package pack <source-folder> -o <output.kpkg> [--force]");
         Console.WriteLine(" kanata package install <file.kpkg> [--force]");
         Console.WriteLine(" kanata package list");
+        Console.WriteLine(" kanata package inspect [package-or-installable-id]");
     }
 
     private static void PrintInfoHelp()
@@ -340,6 +366,15 @@ internal static class PackageCommand
         Console.WriteLine("Lists packages installed in the local Kanata package store.");
     }
 
+    private static void PrintInspectHelp()
+    {
+        Console.WriteLine("Usage:");
+        Console.WriteLine(" kanata package inspect [package-or-installable-id]");
+        Console.WriteLine();
+        Console.WriteLine("Inspects installed package descriptors, artifacts, command entry points and dependencies.");
+        Console.WriteLine("This command does not run artifacts, fetch sourceRefs or build sources.");
+    }
+
     private static void PrintPackHelp()
     {
         Console.WriteLine("Usage:");
@@ -352,6 +387,88 @@ internal static class PackageCommand
         Console.WriteLine(" <source-folder>/sources/**");
         Console.WriteLine();
         Console.WriteLine("artifacts and sources are both optional, but at least one descriptor is required.");
+    }
+
+
+    private static void PrintInspectionResult(KpkgPackageInspectionResult result, string? targetId)
+    {
+        Console.WriteLine($"Package store: {result.StoreRoot}");
+
+        if (result.Packages.Count == 0)
+        {
+            Console.WriteLine(string.IsNullOrWhiteSpace(targetId)
+                ? "Installed packages: none"
+                : $"Installed package or installable not found: {targetId}");
+            return;
+        }
+
+        Console.WriteLine("Installed package inspection:");
+        foreach (var package in result.Packages)
+        {
+            Console.WriteLine($" - {package.PackageId} {package.Version}");
+            Console.WriteLine($"   Status: {(package.IsUsable ? "usable" : "not usable")}");
+            Console.WriteLine($"   Hash: {package.PackageSha256}");
+            Console.WriteLine($"   Path: {package.InstalledPath}");
+
+            foreach (var problem in package.Problems)
+            {
+                Console.WriteLine($"   Problem: {problem}");
+            }
+
+            if (package.Installables.Count == 0)
+            {
+                Console.WriteLine("   Installables: none");
+                continue;
+            }
+
+            Console.WriteLine("   Installables:");
+            foreach (var installable in package.Installables)
+            {
+                PrintInstallableInspection(installable);
+            }
+        }
+    }
+
+    private static void PrintInstallableInspection(KpkgInstalledInstallableInspection installable)
+    {
+        Console.WriteLine($"    - {installable.Id} {installable.Version} {installable.Kind}");
+        Console.WriteLine($"      Status: {(installable.IsUsable ? "usable" : "not usable")}");
+        Console.WriteLine($"      Descriptor: {installable.DescriptorPath}");
+
+        if (installable.Dependencies.Count > 0)
+        {
+            Console.WriteLine("      Dependencies:");
+            foreach (var dependency in installable.Dependencies)
+            {
+                Console.WriteLine($"       - {dependency.Id}: {(dependency.IsInstalled ? "installed" : "missing")}");
+            }
+        }
+
+        Console.WriteLine($"      Artifacts: {installable.Artifacts.Count}");
+        foreach (var artifact in installable.Artifacts)
+        {
+            Console.WriteLine($"       - {artifact.Role} {artifact.PackagePath}: {(artifact.Exists ? "found" : "missing")}");
+        }
+
+        if (installable.Commands.Count > 0)
+        {
+            Console.WriteLine("      Commands:");
+            foreach (var command in installable.Commands)
+            {
+                Console.WriteLine($"       - {command.Name} ({command.EntryPointKind}) {command.EntryPointPackagePath}: {(command.EntryPointExists ? "found" : "missing")}");
+            }
+        }
+
+        if (installable.Sources.Count > 0 || installable.SourceReferenceCount > 0)
+        {
+            Console.WriteLine($"      Embedded sources: {installable.Sources.Count}");
+            Console.WriteLine($"      Source refs: {installable.SourceReferenceCount}");
+        }
+
+        foreach (var problem in installable.Problems)
+        {
+            Console.WriteLine($"      Problem: {problem}");
+        }
     }
 
     private static void PrintPackageInfo(KpkgPackage package)
