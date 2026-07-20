@@ -1,0 +1,26 @@
+{
+  "format": "kanata.runtime",
+  "schemaVersion": 1,
+  "id": "kanata.core",
+  "version": "0.1.0",
+  "kind": "runtime",
+  "description": "Core runtime primitives for Kanata.",
+  "provides": ["kanata.runtime.core"],
+  "dependencies": [],
+  "compatibility": {
+    "kanataToolVersion": "[0.1.0,)",
+    "platforms": ["windows", "linux", "macos"],
+    "architectures": ["x64", "arm64"]
+  },
+  "gameParticipation": {
+    "build": true,
+    "runtime": true
+  },
+  "artifacts": [
+    {
+      "role": "runtime-assembly",
+      "path": "artifacts/lib/net10.0/Kanata.Core.dll",
+      "targetFramework": "net10.0"
+    }
+  ]
+}

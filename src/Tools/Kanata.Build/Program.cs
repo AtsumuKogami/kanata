@@ -72,6 +72,9 @@ internal static class Program
         Console.WriteLine(" kanata engine status [configuration]");
         Console.WriteLine(" kanata package info <file.kpkg>");
         Console.WriteLine(" kanata package verify <file.kpkg> [--fast]");
+        Console.WriteLine(" kanata package pack <source-folder> -o <output.kpkg> [--force]");
+        Console.WriteLine(" kanata package install <file.kpkg> [--force]");
+        Console.WriteLine(" kanata package list");
         Console.WriteLine(" kanata version");
         Console.WriteLine();
         Console.WriteLine("Project commands, run from a directory that contains one .kanata file:");
@@ -89,5 +92,6 @@ internal static class Program
         Console.WriteLine(" kanata build");
         Console.WriteLine(" kanata play");
         Console.WriteLine(" kanata package info kanata.engineer-0.1.0.kpkg");
+        Console.WriteLine(" kanata package install kanata.engineer-0.1.0.kpkg");
     }
 }

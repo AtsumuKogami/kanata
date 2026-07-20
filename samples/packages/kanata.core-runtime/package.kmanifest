@@ -1,0 +1,27 @@
+{
+  "format": "kanata.package",
+  "schemaVersion": 1,
+  "packageId": "kanata.core",
+  "version": "0.1.0",
+  "displayName": "Kanata Core Runtime",
+  "description": "Core runtime primitives for Kanata.",
+  "installables": [
+    {
+      "id": "kanata.core",
+      "version": "0.1.0",
+      "kind": "runtime",
+      "description": "Core runtime primitives for Kanata.",
+      "provides": ["kanata.runtime.core"],
+      "dependencies": [],
+      "compatibility": {
+        "kanataToolVersion": "[0.1.0,)",
+        "platforms": ["windows", "linux", "macos"],
+        "architectures": ["x64", "arm64"]
+      },
+      "gameParticipation": {
+        "build": true,
+        "runtime": true
+      }
+    }
+  ]
+}

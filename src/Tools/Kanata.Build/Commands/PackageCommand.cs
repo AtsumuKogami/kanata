@@ -20,6 +20,8 @@ internal static class PackageCommand
             "info" => RunInfo(subcommandArgs),
             "verify" => RunVerify(subcommandArgs),
             "pack" => RunPack(subcommandArgs),
+            "install" => RunInstall(subcommandArgs),
+            "list" => RunList(subcommandArgs),
             _ => UnknownSubcommand(subcommand),
         };
 
@@ -177,6 +179,109 @@ internal static class PackageCommand
         return 0;
     }
 
+
+    private static int RunInstall(string[] args)
+    {
+        if (args.Length == 0 || IsHelp(args[0]))
+        {
+            PrintInstallHelp();
+            return args.Length == 1 && IsHelp(args[0]) ? 0 : 1;
+        }
+
+        string? packagePath = null;
+        var force = false;
+
+        foreach (var arg in args)
+        {
+            if (string.Equals(arg, "--force", StringComparison.OrdinalIgnoreCase))
+            {
+                force = true;
+                continue;
+            }
+
+            if (arg.StartsWith("-", StringComparison.Ordinal))
+            {
+                Console.Error.WriteLine($"Unknown package install option: {arg}");
+                PrintInstallHelp();
+                return 1;
+            }
+
+            if (packagePath is not null)
+            {
+                Console.Error.WriteLine("Only one package file may be specified.");
+                PrintInstallHelp();
+                return 1;
+            }
+
+            packagePath = arg;
+        }
+
+        if (packagePath is null)
+        {
+            PrintInstallHelp();
+            return 1;
+        }
+
+        var result = KpkgInstaller.Install(new KpkgInstallOptions
+        {
+            PackagePath = packagePath,
+            Overwrite = force
+        });
+
+        Console.WriteLine("Package installed.");
+        Console.WriteLine($"Package: {result.PackageId}");
+        Console.WriteLine($"Version: {result.Version}");
+        Console.WriteLine($"Installables: {result.InstallableCount}");
+        Console.WriteLine($"Files: {result.FileCount}");
+        Console.WriteLine($"Hash: {result.PackageSha256}");
+        Console.WriteLine($"Installed path: {result.InstalledPath}");
+        return 0;
+    }
+
+    private static int RunList(string[] args)
+    {
+        if (args.Length > 1 || (args.Length == 1 && !IsHelp(args[0])))
+        {
+            PrintListHelp();
+            return 1;
+        }
+
+        if (args.Length == 1 && IsHelp(args[0]))
+        {
+            PrintListHelp();
+            return 0;
+        }
+
+        var store = KpkgPackageStore.Create();
+        var registry = KpkgInstalledRegistry.Read(store);
+
+        Console.WriteLine($"Package store: {store.RootPath}");
+        if (registry.Packages.Count == 0)
+        {
+            Console.WriteLine("Installed packages: none");
+            return 0;
+        }
+
+        Console.WriteLine("Installed packages:");
+        foreach (var package in registry.Packages)
+        {
+            Console.WriteLine($" - {package.PackageId} {package.Version}");
+            Console.WriteLine($"   Hash: {package.PackageSha256}");
+            Console.WriteLine($"   Path: {package.InstalledPath}");
+
+            if (package.Installables.Count > 0)
+            {
+                Console.WriteLine("   Installables:");
+                foreach (var installable in package.Installables)
+                {
+                    Console.WriteLine($"    - {installable.Id} {installable.Version} {installable.Kind}");
+                }
+            }
+        }
+
+        return 0;
+    }
+
     private static int UnknownSubcommand(string subcommand)
     {
         Console.ForegroundColor = ConsoleColor.Red;
@@ -199,9 +304,8 @@ internal static class PackageCommand
         Console.WriteLine(" kanata package info <file.kpkg>");
         Console.WriteLine(" kanata package verify <file.kpkg> [--fast]");
         Console.WriteLine(" kanata package pack <source-folder> -o <output.kpkg> [--force]");
-        Console.WriteLine();
-        Console.WriteLine("Planned but not implemented in this slice:");
-        Console.WriteLine(" kanata package install <file.kpkg>");
+        Console.WriteLine(" kanata package install <file.kpkg> [--force]");
+        Console.WriteLine(" kanata package list");
     }
 
     private static void PrintInfoHelp()
@@ -217,6 +321,23 @@ internal static class PackageCommand
         Console.WriteLine();
         Console.WriteLine("By default verify performs full block, footer, file table and payload hash checks.");
         Console.WriteLine("Use --fast to check only structural metadata.");
+    }
+
+    private static void PrintInstallHelp()
+    {
+        Console.WriteLine("Usage:");
+        Console.WriteLine(" kanata package install <file.kpkg> [--force]");
+        Console.WriteLine();
+        Console.WriteLine("Installs an artifact-first package into the local Kanata package store.");
+        Console.WriteLine("This command does not fetch sourceRefs and does not build sources.");
+    }
+
+    private static void PrintListHelp()
+    {
+        Console.WriteLine("Usage:");
+        Console.WriteLine(" kanata package list");
+        Console.WriteLine();
+        Console.WriteLine("Lists packages installed in the local Kanata package store.");
     }
 
     private static void PrintPackHelp()

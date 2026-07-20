@@ -1,0 +1,27 @@
+{
+  "format": "kanata.package",
+  "schemaVersion": 1,
+  "packageId": "kanata.backend.monogame",
+  "version": "0.1.0",
+  "displayName": "Kanata MonoGame Backend",
+  "description": "MonoGame backend package for Kanata desktop experiments.",
+  "installables": [
+    {
+      "id": "kanata.backend.monogame",
+      "version": "0.1.0",
+      "kind": "backend",
+      "description": "MonoGame backend package for Kanata desktop experiments.",
+      "provides": ["kanata.backend.desktop", "kanata.backend.monogame"],
+      "dependencies": ["kanata.core"],
+      "compatibility": {
+        "kanataToolVersion": "[0.1.0,)",
+        "platforms": ["windows", "linux", "macos"],
+        "architectures": ["x64", "arm64"]
+      },
+      "gameParticipation": {
+        "build": true,
+        "runtime": true
+      }
+    }
+  ]
+}
