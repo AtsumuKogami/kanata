@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(KanataTargetFramework)</TargetFramework>
+    <AssemblyName>Kanata.Hub</AssemblyName>
+    <RootNamespace>Kanata.Hub</RootNamespace>
+    <PackageId>Kanata.Hub</PackageId>
+    <Authors>Kanata</Authors>
+    <Description>Kanata GUI hub for managing the local toolchain.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kanata.Toolchain\Kanata.Toolchain.csproj" />
+  </ItemGroup>
+</Project>

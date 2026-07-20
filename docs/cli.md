@@ -1,6 +1,6 @@
 # Kanata CLI
 
-Status: current CLI feature map.  
+Status: current CLI feature map.
 Scope: installed `kanata` entrypoint, built-in package commands, tool package visibility, and currently direct project/build commands.
 
 ## Entrypoint
@@ -9,27 +9,31 @@ Scope: installed `kanata` entrypoint, built-in package commands, tool package vi
 
 The installed command name is:
 
-```powershell
-kanata
-```
+    kanata
 
 `Kanata.Cli` owns the stable entrypoint. Other tools may provide commands later, but the user-facing command remains `kanata`.
+
+## Shared command execution
+
+CLI and GUI surfaces execute package and toolchain operations through:
+
+    src/Tools/Kanata.Toolchain
+
+The shared command layer returns structured results. `Kanata.Cli` renders these results as text and exit codes. `Kanata.Hub` renders the same results as GUI state.
 
 ## Built-in bootstrap commands
 
 These commands are part of the bootstrap host and must be available without installing additional tool packages:
 
-```powershell
-kanata package info <file.kpkg>
-kanata package verify <file.kpkg> [--fast]
-kanata package pack <source-folder> -o <output.kpkg> [--force]
-kanata package install <file.kpkg> [--force]
-kanata package list
-kanata package inspect [package-or-installable-id]
-kanata tool list
-kanata tool inspect <tool-id>
-kanata version
-```
+    kanata package info <file.kpkg>
+    kanata package verify <file.kpkg> [--fast]
+    kanata package pack <source-folder> -o <output.kpkg> [--force]
+    kanata package install <file.kpkg> [--force]
+    kanata package list
+    kanata package inspect [package-or-installable-id]
+    kanata tool list
+    kanata tool inspect <tool-id>
+    kanata version
 
 `package` commands are built into the Kanata CLI distribution because the package manager cannot depend on being installed through the package manager.
 
@@ -39,23 +43,21 @@ kanata version
 
 The following commands are currently routed directly by `Kanata.Cli` to existing command implementations:
 
-```powershell
-kanata create <name> [--output <path>] [--id <id>] [--force]
-kanata new <template> [--output <path>] [--id <id>] [--force]
-kanata new game <name> [--output <path>] [--id <id>] [--force]
-kanata validate
-kanata restore [target] [configuration] [--force-engine]
-kanata generate [target] [configuration] [--force-engine]
-kanata build [target] [configuration] [--force-engine]
-kanata play [target] [configuration] [--force-engine]
-kanata engine build [configuration] [--force]
-kanata engine status [configuration]
-```
+    kanata create <name> [--output <path>] [--id <id>] [--force]
+    kanata new <template> [--output <path>] [--id <id>] [--force]
+    kanata new game <name> [--output <path>] [--id <id>] [--force]
+    kanata validate
+    kanata restore [target] [configuration] [--force-engine]
+    kanata generate [target] [configuration] [--force-engine]
+    kanata build [target] [configuration] [--force-engine]
+    kanata play [target] [configuration] [--force-engine]
+    kanata engine build [configuration] [--force]
+    kanata engine status [configuration]
 
 These commands are candidates for future tool packages:
 
 | Command group | Future package | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `create`, `new`, `validate` | `kanata.project` | Project creation and validation surface. |
 | `restore`, `generate`, `build`, `play`, `engine` | `kanata.build` | Build pipeline and project execution surface. |
 
@@ -64,7 +66,7 @@ Until dynamic tool routing is implemented, `Kanata.Cli` calls the existing comma
 ## Package commands
 
 | Command | Reads payload | Installs package | Writes registry | Purpose |
-|---|---:|---:|---:|---|
+| --- | ---: | ---: | ---: | --- |
 | `package info` | no | no | no | Print package and installable metadata. |
 | `package verify` | yes | no | no | Validate hashes, block ranges, descriptors, and file table. |
 | `package pack` | yes | no | no | Create a `.kpkg` from source manifests and artifacts. |
@@ -74,30 +76,28 @@ Until dynamic tool routing is implemented, `Kanata.Cli` calls the existing comma
 
 Package install must not execute package code.
 
+## GUI companion
+
+`Kanata.Hub` is the current GUI shell for the toolchain. Hub does not replace the CLI bootstrap. It depends on `Kanata.Toolchain` and currently exposes package/tool visibility as a GUI.
+
 ## Local package store
 
 By default packages are installed to:
 
-```text
-%USERPROFILE%\.kanata\packages\
-```
+    %USERPROFILE%\.kanata\packages\
 
 The store can be overridden with:
 
-```powershell
-$env:KANATA_PACKAGE_STORE = "D:\Dev\KanataStore"
-```
+    $env:KANATA_PACKAGE_STORE = "D:\Dev\KanataStore"
 
 ## Examples
 
-```powershell
-kanata package list
-kanata package inspect kanata.backend.monogame
-kanata tool list
-kanata tool inspect example.engineer
-kanata create MyGame
-cd MyGame
-kanata validate
-kanata build
-kanata play
-```
+    kanata package list
+    kanata package inspect kanata.backend.monogame
+    kanata tool list
+    kanata tool inspect example.engineer
+    kanata create MyGame
+    cd MyGame
+    kanata validate
+    kanata build
+    kanata play

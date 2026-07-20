@@ -14,5 +14,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Kanata.Build\Kanata.Build.csproj" />
     <ProjectReference Include="..\Kanata.Packaging\Kanata.Packaging.csproj" />
+    <ProjectReference Include="..\Kanata.Toolchain\Kanata.Toolchain.csproj" />
   </ItemGroup>
 </Project>

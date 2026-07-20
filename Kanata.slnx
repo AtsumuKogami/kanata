@@ -9,7 +9,9 @@
   <Folder Name="/src/Tools/">
     <Project Path="src/Tools/Kanata.Build/Kanata.Build.csproj" />
     <Project Path="src/Tools/Kanata.Cli/Kanata.Cli.csproj" />
+    <Project Path="src/Tools/Kanata.Hub/Kanata.Hub.csproj" />
     <Project Path="src/Tools/Kanata.Packaging/Kanata.Packaging.csproj" />
     <Project Path="src/Tools/Kanata.ProjectSystem/Kanata.ProjectSystem.csproj" />
+    <Project Path="src/Tools/Kanata.Toolchain/Kanata.Toolchain.csproj" />
   </Folder>
 </Solution>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(KanataTargetFramework)</TargetFramework>
+    <AssemblyName>Kanata.Toolchain</AssemblyName>
+    <RootNamespace>Kanata.Toolchain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kanata.Packaging\Kanata.Packaging.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,4 +1,6 @@
 using Kanata.Packaging;
+using Kanata.Toolchain.Commands;
+using Kanata.Toolchain.Tools;
 
 namespace Kanata.Cli.Commands;
 
@@ -32,9 +34,14 @@ internal static class ToolCommand
             return 1;
         }
 
-        var registry = KpkgToolRegistry.Read();
-        Console.WriteLine($"Package store: {registry.StoreRoot}");
+        var result = ToolCommands.ListTools();
+        if (!result.IsSuccess || result.Value is null)
+        {
+            return PrintMessages(result);
+        }
 
+        var registry = result.Value;
+        Console.WriteLine($"Package store: {registry.StoreRoot}");
         if (registry.Tools.Count == 0)
         {
             Console.WriteLine("Installed tool packages: none");
@@ -48,7 +55,6 @@ internal static class ToolCommand
             Console.WriteLine($"   Status: {(tool.IsUsable ? "usable" : "not usable")}");
             Console.WriteLine($"   Package: {tool.PackageId} {tool.PackageVersion}");
             Console.WriteLine($"   Path: {tool.InstalledPath}");
-
             if (tool.Commands.Count > 0)
             {
                 Console.WriteLine($"   Commands: {string.Join(", ", tool.Commands.Select(command => command.Name))}");
@@ -60,15 +66,7 @@ internal static class ToolCommand
             }
         }
 
-        if (registry.Problems.Count > 0)
-        {
-            Console.WriteLine("Registry problems:");
-            foreach (var problem in registry.Problems)
-            {
-                Console.WriteLine($" - {problem}");
-            }
-        }
-
+        PrintRegistryProblems(registry);
         return registry.Problems.Count == 0 && registry.Tools.All(tool => tool.IsUsable) ? 0 : 1;
     }
 
@@ -80,31 +78,21 @@ internal static class ToolCommand
             return args.Length == 1 && IsHelp(args[0]) ? 0 : 1;
         }
 
-        var targetId = args[0];
-        var registry = KpkgToolRegistry.Read(new KpkgToolRegistryOptions { TargetId = targetId });
-        Console.WriteLine($"Package store: {registry.StoreRoot}");
-
-        if (registry.Tools.Count == 0)
+        var result = ToolCommands.InspectTool(args[0]);
+        if (!result.IsSuccess || result.Value is null)
         {
-            Console.WriteLine($"Installed tool package not found: {targetId}");
-            return 1;
+            return PrintMessages(result);
         }
 
+        var registry = result.Value;
+        Console.WriteLine($"Package store: {registry.StoreRoot}");
         Console.WriteLine("Installed tool inspection:");
         foreach (var tool in registry.Tools)
         {
             PrintTool(tool);
         }
 
-        if (registry.Problems.Count > 0)
-        {
-            Console.WriteLine("Registry problems:");
-            foreach (var problem in registry.Problems)
-            {
-                Console.WriteLine($" - {problem}");
-            }
-        }
-
+        PrintRegistryProblems(registry);
         return registry.Problems.Count == 0 && registry.Tools.All(tool => tool.IsUsable) ? 0 : 1;
     }
 
@@ -170,7 +158,6 @@ internal static class ToolCommand
 
                 Console.WriteLine($"      Entry point: {surface.EntryPointKind} {surface.EntryPointPackagePath}: {(surface.EntryPointExists ? "found" : "missing")}");
                 Console.WriteLine($"      Optional: {(surface.Optional ? "yes" : "no")}");
-
                 if (surface.Platforms.Count > 0)
                 {
                     Console.WriteLine($"      Platforms: {string.Join(", ", surface.Platforms)}");
@@ -182,6 +169,37 @@ internal static class ToolCommand
         {
             Console.WriteLine($"   Problem: {problem}");
         }
+    }
+
+    private static void PrintRegistryProblems(KpkgToolRegistryDocument registry)
+    {
+        if (registry.Problems.Count == 0)
+        {
+            return;
+        }
+
+        Console.WriteLine("Registry problems:");
+        foreach (var problem in registry.Problems)
+        {
+            Console.WriteLine($" - {problem}");
+        }
+    }
+
+    private static int PrintMessages<T>(ToolchainCommandResult<T> result)
+    {
+        foreach (var message in result.Messages)
+        {
+            if (message.Severity == ToolchainMessageSeverity.Error)
+            {
+                Console.Error.WriteLine(message.Text);
+            }
+            else
+            {
+                Console.WriteLine(message.Text);
+            }
+        }
+
+        return result.ExitCode;
     }
 
     private static string FormatSurfaceSummary(KpkgToolSurfaceRecord surface)
@@ -211,21 +229,22 @@ internal static class ToolCommand
         Console.WriteLine("Kanata tool commands");
         Console.WriteLine();
         Console.WriteLine("Usage:");
-        Console.WriteLine(" kanata tool list");
-        Console.WriteLine(" kanata tool inspect <tool-id>");
+        Console.WriteLine("  kanata tool list");
+        Console.WriteLine("  kanata tool inspect <tool-id>");
         Console.WriteLine();
-        Console.WriteLine("Tool command routing is a bootstrap responsibility. This command reports installed tool packages, CLI commands and optional UI surfaces from the local package store.");
+        Console.WriteLine("Tool command routing is a bootstrap responsibility.");
+        Console.WriteLine("This command reports installed tool packages, CLI commands and optional UI surfaces from the local package store.");
     }
 
     private static void PrintListHelp()
     {
         Console.WriteLine("Usage:");
-        Console.WriteLine(" kanata tool list");
+        Console.WriteLine("  kanata tool list");
     }
 
     private static void PrintInspectHelp()
     {
         Console.WriteLine("Usage:");
-        Console.WriteLine(" kanata tool inspect <tool-id>");
+        Console.WriteLine("  kanata tool inspect <tool-id>");
     }
 }

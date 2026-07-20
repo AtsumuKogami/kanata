@@ -1,21 +1,17 @@
 # Kanata CLI bootstrap host v1
 
-Status: current architecture target for the installed `kanata` entrypoint.  
-Scope: bootstrap responsibilities, built-in modules, packageable tool boundaries, and command dispatch direction.
+Status: current architecture target for the installed `kanata` entrypoint.
+Scope: bootstrap responsibilities, built-in modules, packageable tool boundaries, GUI direction, and command dispatch direction.
 
 ## Role
 
 `Kanata.Cli` is the installed command-line entrypoint for Kanata.
 
-```text
-Kanata.Cli = bootstrap host + built-in package manager + command router foundation
-```
+    Kanata.Cli = bootstrap host + built-in package manager + command router foundation
 
 The executable command name is:
 
-```text
-kanata
-```
+    kanata
 
 `Kanata.Cli` is not the build tool itself. It owns the stable entrypoint and dispatches commands to built-in modules or tool-provided command surfaces.
 
@@ -24,7 +20,7 @@ kanata
 The following functionality is part of the installed Kanata CLI distribution:
 
 | Area | Responsibility |
-|---|---|
+| --- | --- |
 | CLI entrypoint | Provide the `kanata` command. |
 | Help/version | Keep basic CLI UX available even if packages are missing. |
 | Packaging | Read, verify, pack, install, list, and inspect `.kpkg` packages. |
@@ -35,69 +31,72 @@ The following functionality is part of the installed Kanata CLI distribution:
 
 Packaging is built-in because Kanata must be able to install or repair tool packages without depending on a package manager that is itself installed as a package.
 
+## Shared command execution
+
+Package and tool commands are executed through:
+
+    src/Tools/Kanata.Toolchain
+
+The shared layer returns structured results. CLI and GUI surfaces render those results differently:
+
+    Kanata.Toolchain -> Kanata.Cli text renderer
+    Kanata.Toolchain -> Kanata.Hub GUI renderer
+
+This prevents package/tool behavior from diverging between CLI and GUI.
+
+## GUI direction
+
+`Kanata.Hub` is the GUI surface for the local toolchain.
+
+Current scope:
+
+    Kanata.Hub V0 = GUI shell + Packages/Tools pages
+
+Hub is not a bootstrap replacement. If Hub breaks, `kanata package` and `kanata tool` must remain usable from the CLI.
+
 ## Packageable tools
 
 These parts should be packageable tool components:
 
 | Package | Kind | Commands / surfaces |
-|---|---|---|
+| --- | --- | --- |
 | `kanata.project` | `tool` | `create`, `new`, `validate` |
 | `kanata.build` | `tool` | `restore`, `generate`, `build`, `play`, `engine` |
-| `kanata.package.explorer` | `tool` | package CLI helpers and optional GUI surface for package inspection and package store management |
-| `kanata.engineer` | `tool` | future engineering commands and optional UI surface |
+| `kanata.package.explorer` or Hub package surface | `tool` | optional GUI/package surface |
+| `kanata.engineer` | `tool` | `engineer`, future docs commands |
 
-## Command dispatch model
+## Current compatibility routing
 
-Current implementation:
+The following commands are currently still routed directly from `Kanata.Cli` to existing command implementations:
 
-```mermaid
-flowchart TD
-    User["User: kanata build"] --> Cli["Kanata.Cli"]
-    Cli --> BuiltIn{"Built-in command?"}
-    BuiltIn -->|yes| Module["Run built-in module"]
-    BuiltIn -->|no| Direct["Run existing direct command implementation"]
-```
+    create
+    new
+    validate
+    restore
+    generate
+    build
+    play
+    engine
 
-Target implementation:
+This is a compatibility bridge until those functions are supplied by installed tool packages.
 
-```mermaid
-flowchart TD
-    User["User: kanata build"] --> Cli["Kanata.Cli"]
-    Cli --> BuiltIn{"Built-in command?"}
-    BuiltIn -->|yes| Module["Run built-in module"]
-    BuiltIn -->|no| Registry["Installed tool command registry"]
-    Registry --> Found{"Provider found?"}
-    Found -->|yes| Process["Start tool process"]
-    Found -->|no| Error["Unknown command + suggestions"]
-```
+## Command priority
 
-Built-in commands have priority over installed tool commands. Installed packages must not override bootstrap commands such as `package`, `tool`, `version`, or `help`.
+When dynamic tool routing is added, command lookup should use this priority:
 
-## Tool process boundary
+1. Built-in bootstrap commands.
+2. Installed tool commands.
+3. Unknown-command error with suggestions.
 
-External tool commands should be launched as separate processes instead of loading tool assemblies into `Kanata.Cli`.
+Installed packages must not override built-in bootstrap commands such as `package`, `tool`, `version`, or future `doctor`.
 
-Supported entrypoint kinds for the first command-routing implementation should be:
+## Process boundary
 
-```text
-dotnet-assembly
-native-executable
-```
+Future external tool commands should be launched as processes instead of loading tool assemblies into the `Kanata.Cli` process.
 
-Scripts and shell commands are deferred because they require additional platform and security rules.
+Allowed command entry point kinds for early versions:
 
-## UI Hub boundary
+    dotnet-assembly
+    native-executable
 
-The Kanata UI Hub is a management surface for humans. It must not replace the CLI bootstrap host.
-
-The CLI remains responsible for:
-
-```text
-package installation
-package repair
-package inspection
-tool command routing
-automation-friendly commands
-```
-
-The Hub can use the same package services, installed registry, and tool surface metadata. Tool packages may declare optional GUI surfaces that the Hub or standalone launchers can expose later.
+Script entry points can be added later after platform and security rules are defined.
