@@ -1,86 +1,64 @@
-# Kanata toolchain command surface v1
+# Toolchain Command Surface V1
 
-Status: current architecture target for CLI/GUI command sharing.
-Scope: shared command execution model used by `Kanata.Cli` and `Kanata.Hub`.
+Kanata toolchain operations are exposed through a shared command surface so CLI and GUI render the same operation results.
 
-## Goal
+## Rule
 
-Kanata toolchain operations must be executed through shared application commands.
+```text
+Kanata.Packaging -> Kanata.Toolchain -> CLI / GUI renderers
+```
 
-    CLI and GUI must not implement separate package/tool logic.
+CLI must not implement package behavior separately from Hub. Hub must not implement package behavior separately from CLI.
 
-The shared layer is:
+## Current command layer
 
-    src/Tools/Kanata.Toolchain
+`Kanata.Toolchain` currently exposes structured package and tool operations:
 
-It depends on low-level service modules such as `Kanata.Packaging` and exposes structured command results for user-facing shells.
+- open package metadata;
+- verify package;
+- pack package staging directory;
+- install package;
+- list installed packages;
+- inspect installed packages;
+- list installed tool packages;
+- inspect installed tool package.
 
-## Roles
+Results are represented as typed payloads plus structured messages:
 
-| Layer | Responsibility |
-| --- | --- |
-| `Kanata.Packaging` | Low-level KPKG reader/writer/verifier/installer/store APIs. |
-| `Kanata.Toolchain` | Application-level command execution and structured results. |
-| `Kanata.Cli` | Text renderer and process entrypoint for `kanata`. |
-| `Kanata.Hub` | GUI renderer for the same command results. |
+- `ToolchainCommandResult`;
+- `ToolchainCommandResult<T>`;
+- `ToolchainMessage`;
+- `ToolchainMessageSeverity`.
 
-## Command result model
+## Renderer responsibilities
 
-Shared commands return structured results:
+`Kanata.Cli` renders command results as terminal text and exit codes.
 
-    ToolchainCommandResult<T>
-      IsSuccess
-      ExitCode
-      Value
-      Messages
+`Kanata.Hub` renders command results as GUI state: cards, lists, details panes, status text and operation log.
 
-The command result is not terminal-specific and not GUI-specific.
+## Package summaries
 
-CLI renders it as text and exit codes.
-GUI renders it as panels, status badges, lists, and dialogs.
+The shared package summary includes:
 
-## Current shared package commands
+- package id;
+- version;
+- display name;
+- description;
+- installables;
+- payload files;
+- block table;
+- package length.
 
-`Kanata.Toolchain.Packages.PackageCommands` provides:
+This allows GUI and CLI surfaces to inspect `.kpkg` packages without duplicating binary package parsing.
 
-| Command | Purpose |
-| --- | --- |
-| `OpenPackage` | Read `.kpkg` metadata without full payload verification. |
-| `VerifyPackage` | Verify `.kpkg` package structure and hashes. |
-| `PackPackage` | Pack a staging directory into `.kpkg`. |
-| `InstallPackage` | Install a `.kpkg` into the local package store. |
-| `ListInstalledPackages` | Read the local installed package registry. |
-| `InspectInstalledPackages` | Inspect installed package usability. |
+## Boundaries
 
-## Current shared tool commands
+The command surface does not yet provide:
 
-`Kanata.Toolchain.Tools.ToolCommands` provides:
+- external tool command execution;
+- project creation flow;
+- build/play flow;
+- terminal embedding;
+- remote registry operations.
 
-| Command | Purpose |
-| --- | --- |
-| `ListTools` | Read installed tool package descriptors, commands, and surfaces. |
-| `InspectTool` | Inspect one installed tool package. |
-
-## Rendering rule
-
-Application commands must not write directly to `Console` and must not create GUI controls.
-
-Allowed:
-
-    command -> structured result -> CLI renderer
-    command -> structured result -> GUI renderer
-
-Not allowed:
-
-    command -> Console.WriteLine
-    command -> Avalonia controls
-    CLI implementation duplicated in GUI
-
-## Future extensions
-
-The same model should be used for project and build operations when they are prepared for tool packages:
-
-    kanata.project -> create/new/validate
-    kanata.build   -> restore/generate/build/play/engine
-
-These commands should become process-routed tool commands later. The shared result model should remain renderer-independent.
+Those should be added as new toolchain commands before they are exposed through CLI or Hub.

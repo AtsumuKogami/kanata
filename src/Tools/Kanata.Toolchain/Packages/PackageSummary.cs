@@ -36,6 +36,11 @@ public sealed class PackageSummary
     public IReadOnlyList<PackageInstallableSummary> Installables { get; init; } = [];
 
     /// <summary>
+    /// Gets package payload files from the file table.
+    /// </summary>
+    public IReadOnlyList<PackageFileSummary> Files { get; init; } = [];
+
+    /// <summary>
     /// Gets package blocks.
     /// </summary>
     public IReadOnlyList<PackageBlockSummary> Blocks { get; init; } = [];

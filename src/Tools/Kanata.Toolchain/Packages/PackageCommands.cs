@@ -229,6 +229,7 @@ public static class PackageCommands
                 installable.Description,
                 installable.Provides,
                 installable.Dependencies)).ToArray(),
+            Files = ReadFileSummaries(packagePath, package),
             Blocks = package.Blocks.Select(block => new PackageBlockSummary(
                 block.BlockId,
                 block.KnownBlockType?.ToString() ?? $"unknown:{block.RawBlockType}",
@@ -237,6 +238,23 @@ public static class PackageCommands
                 block.UncompressedLength)).ToArray(),
             PackageLength = package.Header.PackageLength,
         };
+    }
+
+    private static IReadOnlyList<PackageFileSummary> ReadFileSummaries(string packagePath, KpkgPackage package)
+    {
+        using var stream = File.OpenRead(packagePath);
+        var fileTableBlock = package.Blocks.Single(block => block.BlockId == package.Header.FileTableBlockId);
+        var fileTable = KpkgReader.ReadJsonBlock<KpkgFileTable>(stream, fileTableBlock);
+        return fileTable.Files
+            .OrderBy(file => file.Path, StringComparer.Ordinal)
+            .Select(file => new PackageFileSummary(
+                file.Path,
+                file.Length,
+                file.StoredLength,
+                file.Compression,
+                file.Sha256,
+                file.PayloadBlockId))
+            .ToArray();
     }
 
     private static ToolchainCommandResult<T> Failure<T>(string message)
