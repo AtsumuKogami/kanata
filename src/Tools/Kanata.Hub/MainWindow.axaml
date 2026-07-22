@@ -1,0 +1,90 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Kanata.Hub.ViewModels"
+        xmlns:home="clr-namespace:Kanata.Hub.Views.Pages"
+        xmlns:console="clr-namespace:Kanata.Hub.Views.Console"
+        x:Class="Kanata.Hub.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="1240"
+        Height="800"
+        MinWidth="980"
+        MinHeight="640"
+        Title="Kanata Hub"
+        Background="{DynamicResource Kanata.Brush.WindowBackground}">
+
+  <Window.DataTemplates>
+    <DataTemplate DataType="{x:Type vm:HomePageViewModel}">
+      <home:HomePageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:TemplatesPageViewModel}">
+      <home:TemplatesPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:LibraryPageViewModel}">
+      <home:LibraryPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:EnginePageViewModel}">
+      <home:EnginePageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:SettingsPageViewModel}">
+      <home:SettingsPageView />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type vm:EnvironmentPageViewModel}">
+      <home:EnvironmentPageView />
+    </DataTemplate>
+  </Window.DataTemplates>
+
+  <Grid Margin="24" ColumnDefinitions="*,220" ColumnSpacing="20">
+    <Border Classes="hub-surface main-content">
+      <Grid RowDefinitions="Auto,*" RowSpacing="24">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{Binding CurrentPage.Title}"
+                     Classes="page-title" />
+          <TextBlock Text="{Binding CurrentPage.Subtitle}"
+                     Classes="page-subtitle" />
+        </StackPanel>
+
+        <ContentControl Grid.Row="1"
+                        Content="{Binding CurrentPage}" />
+      </Grid>
+    </Border>
+
+    <Border Grid.Column="1" Classes="hub-surface sidebar">
+      <Grid RowDefinitions="Auto,*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Text="KANATA" Classes="sidebar-kicker" />
+          <TextBlock Text="Hub" Classes="sidebar-title" />
+          <TextBlock Text="Project-first workspace" Classes="muted" />
+        </StackPanel>
+
+        <ListBox Grid.Row="1"
+                 Margin="0,28,0,0"
+                 ItemsSource="{Binding NavigationItems}"
+                 SelectedItem="{Binding SelectedNavigationItem}"
+                 Classes="navigation-list">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:NavigationItemViewModel">
+              <StackPanel Spacing="2" Margin="0,2">
+                <TextBlock Text="{Binding Title}" Classes="navigation-title" />
+                <TextBlock Text="{Binding Description}" Classes="navigation-description" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Grid.Row="2" Spacing="10">
+          <Border Classes="hint-card">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Command console" Classes="hint-title" />
+              <TextBlock Text="Press Ctrl+K to open tool command hints." Classes="muted" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+          <TextBlock Text="UI foundation · MVVM" Classes="footer-note" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <console:CommandConsoleOverlay Grid.ColumnSpan="2"
+                                   DataContext="{Binding Console}"
+                                   IsVisible="{Binding IsOpen}" />
+  </Grid>
+</Window>

@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Kanata.Hub.ViewModels"
+             x:Class="Kanata.Hub.Views.Pages.HomePageView"
+             x:DataType="vm:HomePageViewModel">
+  <Grid RowDefinitions="Auto,*" RowSpacing="22">
+    <Border Classes="section-card">
+      <StackPanel Spacing="12">
+        <TextBlock Text="{Binding WelcomeTitle}" FontSize="24" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding WelcomeText}" Classes="muted" TextWrapping="Wrap" MaxWidth="720" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Content="Create Project" Classes="primary" />
+          <Button Content="Open Project" />
+          <Button Content="Browse Templates" Classes="secondary" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="*,360" ColumnSpacing="18">
+      <Border Classes="section-card">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Recent projects" Classes="section-title" />
+          <TextBlock Text="No project list is connected yet. This area will show recent projects, last opened dates, project type, target platforms, and quick Open actions." Classes="muted" TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+
+      <Border Grid.Column="1" Classes="section-card">
+        <StackPanel Spacing="12">
+          <TextBlock Text="New project" Classes="section-title" />
+          <TextBlock Text="The basic template builder will live here as a composed control. For now this is only a layout slot." Classes="muted" TextWrapping="Wrap" />
+          <TextBox PlaceholderText="Project name" />
+          <TextBox PlaceholderText="Location" />
+          <Button Content="Open builder" Classes="primary" HorizontalAlignment="Left" />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

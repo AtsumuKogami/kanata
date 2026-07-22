@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Kanata.Hub.Views.Pages.SettingsPageView">
+  <Grid RowDefinitions="Auto,*" RowSpacing="18">
+    <Border Classes="section-card">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Settings" Classes="section-title" />
+        <TextBlock Text="Settings will collect paths, package sources, updates, appearance, and about information." Classes="muted" TextWrapping="Wrap" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="260,*" ColumnSpacing="18">
+      <Border Classes="section-card">
+        <StackPanel Spacing="8">
+          <TextBlock Text="General" />
+          <TextBlock Text="Paths" />
+          <TextBlock Text="Package Sources" />
+          <TextBlock Text="Appearance" />
+          <TextBlock Text="About" />
+        </StackPanel>
+      </Border>
+      <Border Grid.Column="1" Classes="section-card">
+        <TextBlock Text="Settings section placeholder" Classes="muted" />
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

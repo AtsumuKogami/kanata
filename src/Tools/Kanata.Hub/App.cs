@@ -1,20 +1,18 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Styling;
-using Avalonia.Themes.Fluent;
+using Avalonia.Markup.Xaml;
 
 namespace Kanata.Hub;
 
 /// <summary>
-/// Avalonia application root for Kanata Hub.
+/// Configures Kanata Hub application resources and desktop lifetime.
 /// </summary>
-public sealed class App : Application
+public partial class App : Application
 {
     /// <inheritdoc />
     public override void Initialize()
     {
-        Styles.Add(new FluentTheme());
-        RequestedThemeVariant = ThemeVariant.Dark;
+        AvaloniaXamlLoader.Load(this);
     }
 
     /// <inheritdoc />

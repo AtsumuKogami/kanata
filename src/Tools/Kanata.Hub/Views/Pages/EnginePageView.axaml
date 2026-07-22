@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Kanata.Hub.Views.Pages.EnginePageView">
+  <Border Classes="section-card">
+    <StackPanel Spacing="12">
+      <TextBlock Text="Engine" Classes="section-title" />
+      <TextBlock Text="Engine build, backend artifacts, and runtime build maintenance will be added here. This page is intentionally separate from project build controls." Classes="muted" TextWrapping="Wrap" />
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <Button Content="Build Engine" Classes="primary" />
+        <Button Content="Rebuild Backends" />
+      </StackPanel>
+    </StackPanel>
+  </Border>
+</UserControl>

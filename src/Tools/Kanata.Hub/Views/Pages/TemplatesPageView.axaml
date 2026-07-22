@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Kanata.Hub.Views.Pages.TemplatesPageView">
+  <Grid RowDefinitions="Auto,*" RowSpacing="18">
+    <Border Classes="section-card">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Templates" Classes="section-title" />
+        <TextBlock Text="Template library and template builder will be composed here. Templates are recipes, not package dumps." Classes="muted" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Content="Create Template" Classes="primary" />
+          <Button Content="Import Template" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="1" Classes="section-card">
+      <TextBlock Text="Template list placeholder" Classes="muted" />
+    </Border>
+  </Grid>
+</UserControl>

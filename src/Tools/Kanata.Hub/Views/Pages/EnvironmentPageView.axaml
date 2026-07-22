@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Kanata.Hub.Views.Pages.EnvironmentPageView">
+  <Grid RowDefinitions="Auto,*" RowSpacing="18">
+    <Border Classes="section-card">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Environment" Classes="section-title" />
+        <TextBlock Text="Maintenance area for installed tools, critical components, version locks, and package store health. This stays quiet until the user needs it." Classes="muted" TextWrapping="Wrap" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <Button Content="Check Environment" Classes="primary" />
+          <Button Content="Update Tools" />
+          <Button Content="Repair" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Row="1" Classes="section-card">
+      <TextBlock Text="Environment health placeholder" Classes="muted" />
+    </Border>
+  </Grid>
+</UserControl>

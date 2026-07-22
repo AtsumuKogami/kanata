@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Kanata.Hub.ViewModels"
+             x:Class="Kanata.Hub.Views.Console.CommandConsoleOverlay"
+             x:DataType="vm:CommandConsoleViewModel">
+  <Grid Background="#99000000">
+    <Border Width="640"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="0,72,0,0"
+            Classes="hub-surface main-content">
+      <StackPanel Spacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Command console" FontSize="22" FontWeight="SemiBold" />
+          <TextBlock Text="Tool command hints. Execution will be wired through Kanata.Toolchain later." Classes="muted" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <TextBox Text="{Binding Query}"
+                 PlaceholderText="Type a command or search hint" />
+
+        <Border Classes="section-card">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Suggestions" Classes="section-title" />
+            <ItemsControl ItemsSource="{Binding Suggestions}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <Border Padding="10,7" Margin="0,0,0,6" Background="{DynamicResource Kanata.Brush.WindowBackground}" CornerRadius="8">
+                    <TextBlock Text="{Binding}" />
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <TextBlock Text="Esc closes · Ctrl+K toggles" Classes="footer-note" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

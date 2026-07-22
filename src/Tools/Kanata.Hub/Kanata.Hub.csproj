@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>$(KanataTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Kanata.Hub</AssemblyName>
     <RootNamespace>Kanata.Hub</RootNamespace>
-    <PackageId>Kanata.Hub</PackageId>
-    <Authors>Kanata</Authors>
-    <Description>Kanata GUI hub for managing the local toolchain.</Description>
+    <ApplicationIcon />
+    <Description>Kanata GUI hub for managing projects, templates, components, engine builds, settings, and environment maintenance.</Description>
   </PropertyGroup>
 
   <ItemGroup>

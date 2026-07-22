@@ -1,0 +1,48 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <Styles.Resources>
+    <!-- Kanata gray base palette. Change this file first when creating themes. -->
+    <Color x:Key="Kanata.Color.WindowBackground">#151515</Color>
+    <Color x:Key="Kanata.Color.Surface">#1E1E1E</Color>
+    <Color x:Key="Kanata.Color.SurfaceRaised">#262626</Color>
+    <Color x:Key="Kanata.Color.SurfaceHover">#303030</Color>
+    <Color x:Key="Kanata.Color.Border">#3A3A3A</Color>
+
+    <!-- Red / pink accent family. -->
+    <Color x:Key="Kanata.Color.Accent">#E5486D</Color>
+    <Color x:Key="Kanata.Color.AccentHover">#F15F82</Color>
+    <Color x:Key="Kanata.Color.AccentSoft">#3A1D27</Color>
+    <Color x:Key="Kanata.Color.AccentBorder">#7A2E43</Color>
+
+    <!-- Text family. -->
+    <Color x:Key="Kanata.Color.Text">#F2F2F2</Color>
+    <Color x:Key="Kanata.Color.TextMuted">#A7A7A7</Color>
+    <Color x:Key="Kanata.Color.TextSubtle">#747474</Color>
+
+    <!-- Semantic states. -->
+    <Color x:Key="Kanata.Color.Success">#4ADE80</Color>
+    <Color x:Key="Kanata.Color.Warning">#FBBF24</Color>
+    <Color x:Key="Kanata.Color.Error">#FB7185</Color>
+    <Color x:Key="Kanata.Color.Info">#93C5FD</Color>
+
+    <SolidColorBrush x:Key="Kanata.Brush.WindowBackground" Color="{StaticResource Kanata.Color.WindowBackground}" />
+    <SolidColorBrush x:Key="Kanata.Brush.Surface" Color="{StaticResource Kanata.Color.Surface}" />
+    <SolidColorBrush x:Key="Kanata.Brush.SurfaceRaised" Color="{StaticResource Kanata.Color.SurfaceRaised}" />
+    <SolidColorBrush x:Key="Kanata.Brush.SurfaceHover" Color="{StaticResource Kanata.Color.SurfaceHover}" />
+    <SolidColorBrush x:Key="Kanata.Brush.Border" Color="{StaticResource Kanata.Color.Border}" />
+
+    <SolidColorBrush x:Key="Kanata.Brush.Accent" Color="{StaticResource Kanata.Color.Accent}" />
+    <SolidColorBrush x:Key="Kanata.Brush.AccentHover" Color="{StaticResource Kanata.Color.AccentHover}" />
+    <SolidColorBrush x:Key="Kanata.Brush.AccentSoft" Color="{StaticResource Kanata.Color.AccentSoft}" />
+    <SolidColorBrush x:Key="Kanata.Brush.AccentBorder" Color="{StaticResource Kanata.Color.AccentBorder}" />
+
+    <SolidColorBrush x:Key="Kanata.Brush.Text" Color="{StaticResource Kanata.Color.Text}" />
+    <SolidColorBrush x:Key="Kanata.Brush.TextMuted" Color="{StaticResource Kanata.Color.TextMuted}" />
+    <SolidColorBrush x:Key="Kanata.Brush.TextSubtle" Color="{StaticResource Kanata.Color.TextSubtle}" />
+
+    <SolidColorBrush x:Key="Kanata.Brush.Success" Color="{StaticResource Kanata.Color.Success}" />
+    <SolidColorBrush x:Key="Kanata.Brush.Warning" Color="{StaticResource Kanata.Color.Warning}" />
+    <SolidColorBrush x:Key="Kanata.Brush.Error" Color="{StaticResource Kanata.Color.Error}" />
+    <SolidColorBrush x:Key="Kanata.Brush.Info" Color="{StaticResource Kanata.Color.Info}" />
+  </Styles.Resources>
+</Styles>

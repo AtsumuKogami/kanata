@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Kanata.Hub.Views.Pages.LibraryPageView">
+  <Grid RowDefinitions="Auto,*" RowSpacing="18">
+    <Border Classes="section-card">
+      <StackPanel Spacing="10">
+        <TextBlock Text="Component Library" Classes="section-title" />
+        <TextBlock Text="Only components belong here: backends, runtime modules, gameplay modules, and asset packs." Classes="muted" TextWrapping="Wrap" />
+        <TextBox PlaceholderText="Search components" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="1" ColumnDefinitions="320,*" ColumnSpacing="18">
+      <Border Classes="section-card">
+        <TextBlock Text="Component list placeholder" Classes="muted" />
+      </Border>
+      <Border Grid.Column="1" Classes="section-card">
+        <TextBlock Text="Component details placeholder" Classes="muted" />
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>
